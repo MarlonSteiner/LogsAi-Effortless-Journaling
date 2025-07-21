@@ -7,6 +7,28 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Core journal functionality
+  resources :journal_entries
+
+  # Moods for tagging
+  resources :moods, only: [:index, :show]
+
+  # Mood summaries
+  resources :mood_summaries, only: [:index, :show]
+
+  # Entry tags (for AJAX mood tagging)
+  resources :entry_tags, only: [:create, :destroy]
+
+  # Dashboard
+  get "dashboard", to: "dashboard#index"
+
+  # Static pages
+  get "about", to: "pages#about"
+  get "privacy", to: "pages#privacy"
+
+  # User profile
+  resources :users, only: [:show, :edit, :update]
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

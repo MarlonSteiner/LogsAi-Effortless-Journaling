@@ -1,0 +1,2 @@
+class EntryTagsController < ApplicationController
+end
