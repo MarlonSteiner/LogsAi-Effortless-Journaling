@@ -10,6 +10,6 @@ class User < ApplicationRecord
   has_many :moods, through: :entry_tags
 
   # Validations
-  validates :name, presence: true, allow_blank: true
-  validates :surname, presence: true, allow_blank: true
+  # validates :name, presence: true, allow_blank: true
+  # validates :surname, presence: true, allow_blank: true
 end

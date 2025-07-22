@@ -1,0 +1,62 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h1><%= @journal_entry.title.presence || "Untitled Entry" %></h1>
+          <p class="text-muted">
+            <%= @journal_entry.entry_date.strftime("%B %d, %Y") %>
+            <% if @journal_entry.input_type.present? %>
+              • <%= @journal_entry.input_type.capitalize %>
+            <% end %>
+            <% if @journal_entry.ai_mood_label.present? %>
+              • Mood: <%= @journal_entry.ai_mood_label.capitalize %>
+            <% end %>
+          </p>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            Actions
+          </button>
+          <ul class="dropdown-menu">
+            <li><%= link_to "Edit", edit_journal_entry_path(@journal_entry), class: "dropdown-item" %></li>
+            <li>
+              <%= button_to "Redo", @journal_entry,
+                  method: :delete,
+                  class: "dropdown-item text-warning btn btn-link text-start p-0 border-0",
+                  form: {
+                    class: "d-inline w-100",
+                    data: { turbo: false },
+                    onsubmit: "return confirm('This will delete the current entry and let you rewrite it. Are you sure?')"
+                  },
+                  params: { redo: "true" } %>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <%= button_to "Delete", @journal_entry,
+                  method: :delete,
+                  class: "dropdown-item text-danger btn btn-link text-start p-0 border-0",
+                  form: {
+                    class: "d-inline w-100",
+                    data: { turbo: false },
+                    onsubmit: "return confirm('Are you sure you want to permanently delete this entry?')"
+                  } %>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="content">
+            <%= simple_format(@journal_entry.content) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <%= link_to "← Back to All Entries", journal_entries_path, class: "btn btn-outline-primary" %>
+      </div>
+    </div>
+  </div>
+</div>
