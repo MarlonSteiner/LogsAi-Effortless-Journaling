@@ -11,5 +11,5 @@ class User < ApplicationRecord
 
   # Validations
   # validates :name, presence: true, allow_blank: true
-  # alidates :surname, presence: true, allow_blank: true
+  # validates :surname, presence: true, allow_blank: true
 end
