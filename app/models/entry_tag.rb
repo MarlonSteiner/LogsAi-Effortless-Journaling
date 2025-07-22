@@ -3,9 +3,9 @@ class EntryTag < ApplicationRecord
   belongs_to :journal_entry
   belongs_to :mood
 
-  # # Validations
+  # Validations
   # validates :journal_entry_id, uniqueness: {
-  #   scope: :mood_id,
-  #   message: "Mood already tagged for this entry"
+    # scope: :mood_id,
+    # message: "Mood already tagged for this entry"
   # }
 end

@@ -21,7 +21,7 @@ class JournalEntry < ApplicationRecord
 
   # Instance methods
   def formatted_date
-    entry_date.strftime("%B %d, %Y")
+    entry_date.strftime("%B, %d, %Y")
   end
 
   def mood_count
