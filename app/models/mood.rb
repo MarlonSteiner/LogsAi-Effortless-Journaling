@@ -5,8 +5,8 @@ class Mood < ApplicationRecord
   has_many :users, through: :journal_entries
 
   # Validations
-  validates :category, presence: true, uniqueness: { case_sensitive: false }
-  validates :category, length: { minimum: 2, maximum: 100 }
+  # validates :category, presence: true, uniqueness: { case_sensitive: false }
+  # validates :category, length: { minimum: 2, maximum: 100 }
 
   # Scopes
   scope :alphabetical, -> { order(:category) }

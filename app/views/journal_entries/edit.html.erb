@@ -1,0 +1,41 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h1>Edit Journal Entry</h1>
+
+      <%= simple_form_for @journal_entry, html: { data: { turbo: false } } do |f| %>
+        <%= f.input :title,
+            label: "Title (optional)",
+            placeholder: "Give your entry a title...",
+            input_html: { class: "form-control" } %>
+
+        <%= f.input :content,
+            as: :text,
+            label: "Content",
+            placeholder: "What's on your mind today?",
+            input_html: { rows: 8, class: "form-control" } %>
+
+        <div class="row">
+          <div class="col-md-6">
+            <%= f.input :entry_date,
+                as: :date,
+                label: "Entry Date",
+                input_html: { class: "form-control" } %>
+          </div>
+          <div class="col-md-6">
+            <%= f.input :input_type,
+                collection: [['Text', 'text'], ['Speech', 'speech'], ['Image', 'image']],
+                prompt: 'Select input type',
+                label: "Input Type",
+                input_html: { class: "form-select" } %>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <%= f.submit "Update Entry", class: "btn btn-primary" %>
+          <%= link_to "Cancel", @journal_entry, class: "btn btn-secondary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

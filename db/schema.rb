@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_21_144341) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_22_143506) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,6 +31,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_144341) do
     t.date "entry_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ai_mood_label"
+    t.text "ai_color_theme"
+    t.text "ai_background_style"
+    t.text "ai_summary"
     t.index ["user_id"], name: "index_journal_entries_on_user_id"
     t.check_constraint "(input_type::text = ANY (ARRAY['text'::character varying, 'speech'::character varying, 'image'::character varying]::text[])) OR input_type IS NULL", name: "valid_input_type"
   end
