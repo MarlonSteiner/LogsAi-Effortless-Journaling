@@ -21,6 +21,7 @@ Rails.application.routes.draw do
 
   # Dashboard
   get "dashboard", to: "dashboard#index"
+  get "dashboard/calendar", to: "dashboard#calendar"
 
   # Static pages
   get "about", to: "pages#about"
