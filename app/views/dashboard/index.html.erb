@@ -1,13 +1,2 @@
-<h1>Debug Info</h1>
-<p>Current Date: <%= @current_date %></p>
-<p>Date Range: <%= @date_range.first %> to <%= @date_range.last %></p>
 
-<!-- Show all dates -->
-<% @date_range.each do |date| %>
-  <div>
-    <%= date.day %> - <%= date.strftime("%a") %>
-    <% if date == @current_date %>
-      (TODAY)
-    <% end %>
-  </div>
-<% end %>
+<%= render 'shared/horizontal_calendar' %>
