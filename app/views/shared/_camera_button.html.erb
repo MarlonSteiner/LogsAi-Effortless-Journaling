@@ -1,0 +1,76 @@
+<!-- app/views/shared/_camera_button.html.erb -->
+<div class="camera-container" data-controller="camera">
+  <!-- Camera Button -->
+  <button type="button" class="camera-btn" data-action="click->camera#showOptions">
+    📷
+  </button>
+
+  <!-- Simple Popup -->
+  <div data-camera-target="popup" class="camera-popup" style="display: none;">
+    <div class="popup-content">
+      <h6>Add Photo/Video</h6>
+
+      <!-- Take Photo -->
+      <label for="take-photo" class="option-btn" data-action="click->camera#takePhoto">
+        📸 Take Photo
+      </label>
+      <input type="file"
+             data-camera-target="takeInput"
+             accept="image/*,video/*"
+             capture="environment"
+             style="display: none;"
+             data-action="change->camera#handleFile">
+
+      <!-- Upload File -->
+      <label for="upload-file" class="option-btn" data-action="click->camera#uploadFile">
+        📁 Upload File
+      </label>
+      <input type="file"
+             data-camera-target="uploadInput"
+             accept="image/*,video/*"
+             style="display: none;"
+             data-action="change->camera#handleFile">
+
+      <button data-action="click->camera#hideOptions">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.camera-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #7c3aed;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.camera-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  z-index: 1000;
+  color: white;
+}
+
+.option-btn {
+  display: block;
+  padding: 15px;
+  margin: 10px 0;
+  background: #2a2a2a;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.option-btn:hover {
+  background: #3a3a3a;
+}
+</style>

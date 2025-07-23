@@ -1,2 +1,59 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<!-- app/views/pages/home.html.erb -->
+<div class="dashboard-container" data-controller="dashboard">
+  <!-- Dynamic Content Area -->
+  <div class="content-area">
+    <!-- Recording Interface (shown when no entry for selected date) -->
+    <div data-dashboard-target="recordingInterface" class="recording-interface">
+      <!-- Centered Record Button Section -->
+      <div class="record-section">
+        <button class="record-btn" data-action="click->dashboard#startRecording">
+          <div class="sound-waves">🎵</div>
+          <span>RECORD</span>
+        </button>
+      </div>
+
+      <!-- Bottom Action Buttons Section -->
+      <div class="action-buttons-section">
+        <button class="action-btn text-btn" data-action="click->dashboard#openTextEntry">
+          <span>T</span>
+        </button>
+        <%= render 'shared/camera_button' %>
+      </div>
+    </div>
+
+    <!-- Entry Display -->
+    <div data-dashboard-target="entryDisplay" class="entry-display" style="display: none;">
+      <div class="entry-content">
+        <div class="entry-section">
+          <div class="entry-header">
+            <h3 data-dashboard-target="entryTitle">Entry Title</h3>
+            <button class="options-btn" data-action="click->dashboard#toggleEntryOptions">⋯</button>
+          </div>
+        </div>
+
+        <div class="entry-section">
+          <h4>IN A NUTSHELL</h4>
+          <p data-dashboard-target="entryNutshell">Brief summary will appear here...</p>
+          <button class="options-btn" data-action="click->dashboard#toggleNutshellOptions">⋯</button>
+        </div>
+
+        <div class="entry-section">
+          <h4>CLEANED UP TEXT</h4>
+          <div data-dashboard-target="entryFullText" class="full-text">
+            Full entry content will appear here...
+          </div>
+        </div>
+
+        <div data-dashboard-target="entryMedia" class="entry-media" style="display: none;">
+          <!-- Media content inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div data-dashboard-target="loadingState" class="loading-state" style="display: none;">
+    <div class="spinner"></div>
+    <p>Processing with AI...</p>
+  </div>
+</div>
