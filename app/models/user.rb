@@ -5,11 +5,17 @@ class User < ApplicationRecord
 
   # Associations
   has_many :journal_entries, dependent: :destroy
-  has_many :mood_summaries, dependent: :destroy
-  has_many :entry_tags, through: :journal_entries
-  has_many :moods, through: :entry_tags
 
   # Validations
-  # validates :name, presence: true, allow_blank: true
-  # validates :surname, presence: true, allow_blank: true
+  # validates :name, presence: true, length: { minimum: 2, maximum: 50 }
+  # validates :surname, presence: true, length: { minimum: 2, maximum: 50 }
+
+  # Instance methods
+  def full_name
+    "#{name} #{surname}".strip
+  end
+
+  def first_name
+    name
+  end
 end

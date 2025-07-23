@@ -8,16 +8,11 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Core journal functionality
-  resources :journal_entries
-
-  # Moods for tagging
-  resources :moods, only: [:index, :show]
-
-  # Mood summaries
-  resources :mood_summaries, only: [:index, :show]
-
-  # Entry tags (for AJAX mood tagging)
-  resources :entry_tags, only: [:create, :destroy]
+  resources :journal_entries do
+    collection do
+      get 'for_date/:date', to: 'journal_entries#show_for_date', as: 'for_date'
+    end
+  end
 
   # Dashboard
   get "dashboard", to: "dashboard#index"

@@ -1,1 +1,166 @@
-// Specific CSS for your home-page
+// app/assets/stylesheets/pages/home.scss
+
+.dashboard-container {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: white;
+  padding: 0;
+  margin: 0;
+}
+
+.content-area {
+  padding: 40px 20px;
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recording-interface {
+  width: 100%;
+  max-width: 600px;
+}
+
+// Centered Record Button Section
+.record-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 80px;
+
+  .record-btn {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(124, 58, 237, 0.6);
+    }
+
+    .sound-waves {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+// Action Buttons Section
+.action-buttons-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+
+  .action-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .text-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+  }
+}
+
+.entry-display {
+  text-align: left;
+  max-width: 600px;
+  margin: 0 auto;
+
+  .entry-section {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+
+    h4 {
+      color: #7c3aed;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+  }
+
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .options-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .full-text {
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .entry-media {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+
+    img, video {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+  }
+}
+
+.loading-state {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background: #1a1a1a;
+  padding: 40px;
+  border-radius: 12px;
+  z-index: 1000;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #333;
+    border-top: 4px solid #7c3aed;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,2 +1,0 @@
-class MoodSummariesController < ApplicationController
-end
