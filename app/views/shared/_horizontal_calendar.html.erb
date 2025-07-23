@@ -1,0 +1,12 @@
+<!-- Show all dates -->
+<div class="d-flex gap-2 my-3 overflow-auto">
+  <% @date_range.each do |date| %>
+    <div class="border rounded px-2 text-center">
+      <% if date == @current_date %>
+        TODAY
+      <% end %>
+      <div><%= date.day %></div>
+      <div><%= date.strftime("%a") %></div>
+    </div>
+  <% end %>
+</div>
