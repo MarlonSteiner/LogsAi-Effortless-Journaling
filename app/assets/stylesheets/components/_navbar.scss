@@ -1,282 +1,44 @@
-.main-content {
-    padding: 2rem;
-    transition: all 0.3s ease;
+.navbar-lewagon {
+  justify-content: space-between;
+  background: white;
 }
 
-.main-content.nav-open {
-    transform: translateX(20%);
-    filter: brightness(0.7);
+.navbar-lewagon .navbar-collapse {
+  flex-grow: 0;
 }
 
-/* Navbar Toggle Button */
-.navbar-toggle {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    background: rgba(139, 95, 191, 0.9);
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 1001;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+.navbar-lewagon .navbar-brand img {
+  width: 40px;
 }
 
-.navbar-toggle:hover {
-    background: rgba(139, 95, 191, 1);
-    transform: scale(1.05);
+.simple-sidebar {
+  position: fixed;
+  top: 0;
+  left: -80%;
+  width: 80%;
+  height: 100vh;
+  background: white;
+  z-index: 1000;
+  padding: 20px;
+  transition: left 0.3s ease;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
 }
 
-/* Sliding Navigation */
-.sliding-navbar {
-    position: fixed;
-    top: 0;
-    left: -80%;
-    width: 80%;
-    height: 100vh;
-    background: linear-gradient(180deg, #1a1b2e 0%, #16213e 50%, #533483 100%);
-    z-index: 1002;
-    transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(20px);
+.simple-sidebar.open {
+  left: 0;
 }
 
-.sliding-navbar.open {
-    left: 0;
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: none;
 }
 
-/* Dark Overlay */
-.navbar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1001;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(2px);
-}
-
-.navbar-overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Close Button */
-.navbar-close {
-    align-self: flex-end;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    opacity: 0;
-    transform: translateX(20px);
-    animation: slideInRight 0.5s ease forwards;
-    animation-delay: 0.1s;
-}
-
-.navbar-close:hover {
-    color: #8b5fbf;
-    transform: rotate(90deg);
-}
-
-/* Search Section */
-.navbar-search {
-    padding: 1rem 2rem;
-    opacity: 0;
-    transform: translateX(-20px);
-    animation: slideInLeft 0.5s ease forwards;
-    animation-delay: 0.2s;
-}
-
-.search-container {
-    position: relative;
-}
-
-.search-input {
-    width: 100%;
-    background: rgba(139, 95, 191, 0.2);
-    border: 2px solid rgba(139, 95, 191, 0.3);
-    border-radius: 12px;
-    padding: 12px 45px 12px 15px;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: #8b5fbf;
-    background: rgba(139, 95, 191, 0.3);
-    box-shadow: 0 0 20px rgba(139, 95, 191, 0.3);
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.search-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #8b5fbf;
-    font-size: 1.1rem;
-}
-
-/* Navigation Menu */
-.navbar-menu {
-    flex: 1;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.nav-item {
-    opacity: 0;
-    transform: translateX(-30px);
-    animation: slideInLeft 0.5s ease forwards;
-}
-
-.nav-item:nth-child(1) { animation-delay: 0.3s; }
-.nav-item:nth-child(2) { animation-delay: 0.4s; }
-.nav-item:nth-child(3) { animation-delay: 0.5s; }
-.nav-item:nth-child(4) { animation-delay: 0.6s; }
-
-.nav-link {
-    color: white;
-    text-decoration: none;
-    font-size: 2rem;
-    font-weight: 300;
-    padding: 0.5rem 0;
-    transition: all 0.3s ease;
-    border-bottom: 2px solid transparent;
-    display: block;
-}
-
-.nav-link:hover {
-    color: #8b5fbf;
-    transform: translateX(10px);
-    border-bottom-color: #8b5fbf;
-}
-
-.nav-item.hidden {
-    display: none;
-}
-
-/* Account Section */
-.navbar-account {
-    padding: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: slideInUp 0.5s ease forwards;
-    animation-delay: 0.7s;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.navbar-account:hover {
-    background: rgba(139, 95, 191, 0.1);
-}
-
-.account-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #8b5fbf, #533483);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: white;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
-}
-
-.account-label {
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-/* Animations */
-@keyframes slideInLeft {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Reset animations when navbar closes */
-.sliding-navbar:not(.open) .navbar-close,
-.sliding-navbar:not(.open) .navbar-search,
-.sliding-navbar:not(.open) .nav-item,
-.sliding-navbar:not(.open) .navbar-account {
-    opacity: 0;
-    animation: none;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .nav-link {
-        font-size: 1.5rem;
-    }
-
-    .navbar-menu {
-        gap: 1rem;
-        padding: 1.5rem;
-    }
-
-    .navbar-search {
-        padding: 1rem 1.5rem;
-    }
-
-    .navbar-account {
-        padding: 1.5rem;
-    }
-}
-
-/* Demo content styles */
-.demo-content {
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.demo-card {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 2rem;
-    margin: 2rem 0;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.sidebar-overlay.show {
+  display: block;
 }
