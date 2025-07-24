@@ -18,4 +18,9 @@ class User < ApplicationRecord
   def first_name
     name
   end
+
+  # Logo
+  def logo_initial
+    first_name.present? ? first_name[0].upcase : "U"
+  end
 end
