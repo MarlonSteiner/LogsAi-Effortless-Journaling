@@ -2,7 +2,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["recordingInterface", "entryDisplay", "dateInput"]
+  static targets = ["recordingInterface", "entryDisplay", "textEntryForm", "dateInput", "calendarSection"]
   static values = {
     currentDate: String,
     createUrl: String,
@@ -123,6 +123,61 @@ export default class extends Controller {
         container.appendChild(textIndicator)
         break
     }
+  }
+
+  // Show text entry form
+  showTextForm() {
+    this.recordingInterfaceTarget.style.display = 'none'
+    this.entryDisplayTarget.style.display = 'none'
+    this.textEntryFormTarget.style.display = 'block'
+    this.calendarSectionTarget.style.display = 'none' // Hide calendar in text form
+  }
+
+  // Submit text entry
+  async submitTextEntry(event) {
+    event.preventDefault()
+
+    const formData = new FormData(event.target)
+
+    try {
+      const response = await fetch(this.createUrlValue, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
+      if (!response.ok) throw new Error('Failed to create entry')
+
+      const result = await response.json()
+
+      if (result.success) {
+        this.showEntryDisplay(result.entry)
+      } else {
+        alert('Failed to create entry')
+      }
+    } catch (error) {
+      console.error('Error creating text entry:', error)
+      alert('Failed to create entry')
+    }
+  }
+
+  // Update the existing methods
+  showRecordingInterface() {
+    this.recordingInterfaceTarget.style.display = 'block'
+    this.entryDisplayTarget.style.display = 'none'
+    this.textEntryFormTarget.style.display = 'none'
+    this.calendarSectionTarget.style.display = 'block' // Show calendar
+  }
+
+  showEntryDisplay(entry) {
+    this.recordingInterfaceTarget.style.display = 'none'
+    this.textEntryFormTarget.style.display = 'none'
+    this.entryDisplayTarget.style.display = 'block'
+    this.calendarSectionTarget.style.display = 'block' // Show calendar
+
+    this.updateEntryContent(entry)
   }
 
   // Handle entry creation from audio controller
