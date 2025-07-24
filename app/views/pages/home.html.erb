@@ -1,59 +1,117 @@
-<!-- app/views/pages/home.html.erb -->
-<div class="dashboard-container" data-controller="dashboard">
-  <!-- Dynamic Content Area -->
-  <div class="content-area">
-    <!-- Recording Interface (shown when no entry for selected date) -->
-    <div data-dashboard-target="recordingInterface" class="recording-interface">
-      <!-- Centered Record Button Section -->
-      <div class="record-section">
-        <button class="record-btn" data-action="click->dashboard#startRecording">
-          <div class="sound-waves">🎵</div>
-          <span>RECORD</span>
+<%# app/views/pages/home.html.erb %>
+<div class="dashboard-container"
+    data-controller="dashboard audio"
+    data-dashboard-current-date-value="<%= @selected_date %>"
+    data-dashboard-create-url-value="<%= journal_entries_path %>"
+    data-dashboard-show-url-value="<%= for_date_journal_entries_path('DATE_PLACEHOLDER') %>"
+    data-audio-entry-date-value="<%= @selected_date %>"
+    data-audio-create-url-value="<%= journal_entries_path %>"
+    data-action="entryCreated@window->dashboard#entryCreated">
+
+  <!-- Date Selector -->
+  <div class="date-selector mb-4">
+    <%= form_with url: root_path, method: :get, local: false,
+                  data: { action: "change->dashboard#dateChanged" } do |f| %>
+      <%= f.date_field :date,
+                      value: @selected_date,
+                      class: "form-control date-input",
+                      data: { dashboard_target: "dateInput" } %>
+    <% end %>
+  </div>
+
+  <!-- Recording Interface (shown when no entry exists) -->
+  <div class="recording-interface"
+      data-dashboard-target="recordingInterface"
+      style="display: none;">
+
+    <div class="recording-section">
+      <!-- Main Record Button -->
+      <div class="record-button-container">
+        <button class="record-button"
+                data-audio-target="recordButton"
+                data-action="click->audio#toggleRecording"
+                type="button">
+          <i class="fas fa-microphone"></i>
         </button>
+
+        <!-- Recording Status -->
+        <div class="recording-status"
+            data-audio-target="recordingStatus">
+        </div>
       </div>
 
-      <!-- Bottom Action Buttons Section -->
-      <div class="action-buttons-section">
-        <button class="action-btn text-btn" data-action="click->dashboard#openTextEntry">
-          <span>T</span>
+      <!-- Secondary Actions -->
+      <div class="secondary-actions">
+        <!-- Text Entry Button -->
+        <button class="action-button text-button"
+                data-action="click->dashboard#goToTextEntry"
+                type="button">
+          <span class="button-label">T</span>
         </button>
+
+        <!-- Camera Button -->
         <%= render 'shared/camera_button' %>
       </div>
     </div>
 
-    <!-- Entry Display -->
-    <div data-dashboard-target="entryDisplay" class="entry-display" style="display: none;">
-      <div class="entry-content">
-        <div class="entry-section">
-          <div class="entry-header">
-            <h3 data-dashboard-target="entryTitle">Entry Title</h3>
-            <button class="options-btn" data-action="click->dashboard#toggleEntryOptions">⋯</button>
-          </div>
-        </div>
-
-        <div class="entry-section">
-          <h4>IN A NUTSHELL</h4>
-          <p data-dashboard-target="entryNutshell">Brief summary will appear here...</p>
-          <button class="options-btn" data-action="click->dashboard#toggleNutshellOptions">⋯</button>
-        </div>
-
-        <div class="entry-section">
-          <h4>CLEANED UP TEXT</h4>
-          <div data-dashboard-target="entryFullText" class="full-text">
-            Full entry content will appear here...
-          </div>
-        </div>
-
-        <div data-dashboard-target="entryMedia" class="entry-media" style="display: none;">
-          <!-- Media content inserted here -->
-        </div>
-      </div>
+    <!-- Instructions -->
+    <div class="instructions">
+      <p class="instruction-text">
+        Tap the microphone to start recording your thoughts
+      </p>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div data-dashboard-target="loadingState" class="loading-state" style="display: none;">
-    <div class="spinner"></div>
-    <p>Processing with AI...</p>
+  <!-- Entry Display (shown when entry exists) -->
+  <div class="entry-display"
+      data-dashboard-target="entryDisplay"
+      style="display: none;">
+
+    <div class="entry-header">
+      <h2 class="entry-title">Your Journal Entry</h2>
+      <div class="entry-actions">
+        <button class="btn btn-outline-secondary btn-sm"
+                data-action="click->dashboard#editEntry">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger btn-sm"
+                data-action="click->dashboard#deleteEntry">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Entry Mood -->
+    <div class="entry-mood-container">
+      <span class="entry-mood"></span>
+    </div>
+
+    <!-- Entry Content -->
+    <div class="entry-content">
+      <!-- Nutshell Summary -->
+      <div class="nutshell-section">
+        <h3 class="section-title">In a Nutshell</h3>
+        <p class="entry-nutshell"></p>
+      </div>
+
+      <!-- Full Summary -->
+      <div class="summary-section">
+        <h3 class="section-title">Summary</h3>
+        <p class="entry-summary"></p>
+      </div>
+
+      <!-- Media Content -->
+      <div class="media-section">
+        <div class="entry-media"></div>
+      </div>
+    </div>
+
+    <!-- Create New Entry Button -->
+    <div class="new-entry-action">
+      <button class="btn btn-primary"
+              data-action="click->dashboard#dateChanged">
+        <i class="fas fa-plus"></i> Create New Entry
+      </button>
+    </div>
   </div>
 </div>

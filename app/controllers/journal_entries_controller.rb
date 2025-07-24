@@ -1,71 +1,116 @@
+# app/controllers/journal_entries_controller.rb
 class JournalEntriesController < ApplicationController
-  respond_to :html, :json
+  before_action :authenticate_user!
   before_action :set_journal_entry, only: [:show, :edit, :update, :destroy]
 
   def index
-    @journal_entries = current_user.journal_entries.recent
+    @journal_entries = current_user.journal_entries.order(entry_date: :desc)
   end
 
   def show
+    # Handle both direct show requests and date-based lookups
+    if params[:date].present?
+      @entry = current_user.journal_entries.find_by(entry_date: params[:date])
+
+      respond_to do |format|
+        format.json do
+          if @entry
+            render json: {
+              entry: {
+                id: @entry.id,
+                title: @entry.title,
+                content: @entry.content,
+                ai_mood_label: @entry.ai_mood_label,
+                ai_summary: @entry.ai_summary,
+                ai_nutshell: @entry.ai_nutshell,
+                input_type: @entry.input_type,
+                entry_date: @entry.entry_date,
+                media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
+              }
+            }
+          else
+            render json: { entry: nil }
+          end
+        end
+      end
+    else
+      # Regular show action for specific entry
+      respond_to do |format|
+        format.html
+        format.json { render json: @journal_entry }
+      end
+    end
+  end
+
+  def show_for_date
+    @entry = current_user.journal_entries.find_by(entry_date: params[:date])
+
+    respond_to do |format|
+      format.json do
+        if @entry
+          render json: {
+            entry: {
+              id: @entry.id,
+              title: @entry.title,
+              content: @entry.content,
+              ai_mood_label: @entry.ai_mood_label,
+              ai_summary: @entry.ai_summary,
+              ai_nutshell: @entry.ai_nutshell,
+              input_type: @entry.input_type,
+              entry_date: @entry.entry_date,
+              media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
+            }
+          }
+        else
+          render json: { entry: nil }
+        end
+      end
+    end
   end
 
   def new
     @journal_entry = current_user.journal_entries.build
-    @journal_entry.entry_date = Date.current
+    @selected_date = params[:date] || Date.current.to_s
   end
 
   def create
     @journal_entry = current_user.journal_entries.build(journal_entry_params)
 
-    if @journal_entry.save
-      begin
-        ai_result = MoodAnalysisService.new(@journal_entry).analyze
-        if ai_result
-          if @journal_entry.input_type == 'text' || @journal_entry.content.blank?
-            @journal_entry.content = ai_result[:summary]
+    # Set entry date
+    @journal_entry.entry_date = params[:journal_entry][:entry_date] || Date.current
+
+    respond_to do |format|
+      if @journal_entry.save
+        # Process with AI if media file is attached or content is present
+        if should_process_with_ai?
+          begin
+            process_with_ai(@journal_entry)
+          rescue => e
+            Rails.logger.error "AI processing failed: #{e.message}"
+            # Continue without AI analysis if it fails
           end
-
-          @journal_entry.update!(
-            ai_mood_label: ai_result[:mood_label],
-            ai_nutshell: ai_result[:nutshell],
-            ai_color_theme: ai_result[:color_theme],
-            ai_background_style: ai_result[:background_style],
-            ai_summary: ai_result[:summary]
-          )
         end
 
-        respond_to do |format|
-          format.html { redirect_to @journal_entry, notice: 'Entry created!' }
-          format.json {
-            render json: {
-              success: true,
-              entry: entry_json(@journal_entry),
-              message: 'Entry created with AI analysis!'
-            }
-          }
-        end
-      rescue => e
-        Rails.logger.error "AI Analysis failed: #{e.message}"
-        respond_to do |format|
-          format.html { redirect_to @journal_entry, notice: 'Entry created!' }
-          format.json {
-            render json: {
-              success: true,
-              entry: entry_json(@journal_entry),
-              message: 'Entry created!'
-            }
-          }
-        end
-      end
-    else
-      respond_to do |format|
-        format.html { render :new, status: :unprocessable_entity }
-        format.json {
+        format.html { redirect_to root_path, notice: 'Journal entry was successfully created.' }
+        format.json do
           render json: {
-            success: false,
-            errors: @journal_entry.errors.full_messages
-          }, status: :unprocessable_entity
-        }
+            success: true,
+            entry: {
+              id: @journal_entry.id,
+              title: @journal_entry.title,
+              content: @journal_entry.content,
+              ai_mood_label: @journal_entry.ai_mood_label,
+              ai_summary: @journal_entry.ai_summary,
+              ai_nutshell: @journal_entry.ai_nutshell,
+              input_type: @journal_entry.input_type,
+              entry_date: @journal_entry.entry_date,
+              media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil
+            }
+          }
+        end
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { success: false, error: @journal_entry.errors.full_messages.join(', ') } }
       end
     end
   end
@@ -74,43 +119,22 @@ class JournalEntriesController < ApplicationController
   end
 
   def update
-    if @journal_entry.update(journal_entry_params)
-      redirect_to @journal_entry, notice: 'Entry updated!'
-    else
-      render :edit, status: :unprocessable_entity
+    respond_to do |format|
+      if @journal_entry.update(journal_entry_params)
+        format.html { redirect_to @journal_entry, notice: 'Journal entry was successfully updated.' }
+        format.json { render json: @journal_entry }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { error: @journal_entry.errors.full_messages.join(', ') } }
+      end
     end
   end
 
   def destroy
-    if params[:redo] == "true"
-      @journal_entry.destroy
-      redirect_to new_journal_entry_path, notice: 'Entry deleted. Creating a new entry...'
-    else
-      @journal_entry.destroy
-      redirect_to journal_entries_path, notice: 'Entry deleted successfully!'
-    end
-  end
-
-  def redo
-    @journal_entry = current_user.journal_entries.find(params[:id])
     @journal_entry.destroy
-    redirect_to new_journal_entry_path, notice: 'Entry deleted. You can now create a fresh entry.'
-  end
-
-  def show_for_date
-    date = Date.parse(params[:date])
-    @entry = current_user.journal_entries.find_by(entry_date: date)
-
-    if @entry
-      render json: {
-        success: true,
-        entry: entry_json(@entry)
-      }
-    else
-      render json: {
-        success: false,
-        message: 'No entry found for this date'
-      }
+    respond_to do |format|
+      format.html { redirect_to root_path, notice: 'Journal entry was successfully deleted.' }
+      format.json { head :no_content }
     end
   end
 
@@ -124,21 +148,120 @@ class JournalEntriesController < ApplicationController
     params.require(:journal_entry).permit(:title, :content, :input_type, :entry_date, :media_file)
   end
 
-  def entry_json(entry)
-    {
-      id: entry.id,
-      title: entry.title,
-      content: entry.content,
-      ai_nutshell: entry.ai_nutshell,
-      ai_summary: entry.ai_summary,
-      mood_label: entry.ai_mood_label,
-      color_theme: entry.ai_color_theme,
-      background_style: entry.ai_background_style,
-      entry_date: entry.entry_date,
-      input_type: entry.input_type,
-      has_media: entry.has_media?,
-      media_type: entry.media_type,
-      media_url: entry.has_media? ? url_for(entry.media_file) : nil
-    }
+  def should_process_with_ai?
+    @journal_entry.media_file.attached? || @journal_entry.content.present?
+  end
+
+  def process_with_ai(entry)
+    case entry.input_type
+    when 'audio'
+      process_audio_entry(entry)
+    when 'image', 'video'
+      process_media_entry(entry)
+    when 'text'
+      process_text_entry(entry)
+    end
+  end
+
+  def process_audio_entry(entry)
+    Rails.logger.info "=== AUDIO PROCESSING STARTED ==="
+      return unless entry.media_file.attached?
+
+    # For audio entries, we'll use OpenAI's Whisper API to transcribe
+    # and then analyze the transcription
+    begin
+      # Get audio transcription
+      transcription = get_audio_transcription(entry.media_file)
+
+      if transcription.present?
+        # Set the transcription as content
+        entry.update_column(:content, transcription)
+
+        # Analyze the transcribed content
+        analysis = MoodAnalysisService.analyze(transcription, 'audio')
+
+        # Update entry with AI analysis
+        entry.update_columns(
+          title: analysis[:title],
+          ai_mood_label: analysis[:mood],
+          ai_color_theme: analysis[:color_theme],
+          ai_background_style: analysis[:background_style],
+          ai_summary: analysis[:summary],
+          ai_nutshell: analysis[:nutshell]
+        )
+      end
+    rescue => e
+      Rails.logger.error "Audio processing failed: #{e.message}"
+      # Set a default title if AI processing fails
+      entry.update_column(:title, "Voice Recording - #{entry.entry_date.strftime('%B %d, %Y')}")
+    end
+  end
+
+  def process_media_entry(entry)
+    return unless entry.media_file.attached?
+
+    begin
+      # For image/video, analyze the media file directly
+      analysis = MoodAnalysisService.analyze(entry.media_file, entry.input_type)
+
+      entry.update_columns(
+        title: analysis[:title],
+        ai_mood_label: analysis[:mood],
+        ai_color_theme: analysis[:color_theme],
+        ai_background_style: analysis[:background_style],
+        ai_summary: analysis[:summary],
+        ai_nutshell: analysis[:nutshell]
+      )
+    rescue => e
+      Rails.logger.error "Media processing failed: #{e.message}"
+      # Set a default title if AI processing fails
+      entry.update_column(:title, "#{entry.input_type.capitalize} Entry - #{entry.entry_date.strftime('%B %d, %Y')}")
+    end
+  end
+
+  def process_text_entry(entry)
+    return unless entry.content.present?
+
+    begin
+      analysis = MoodAnalysisService.analyze(entry.content, 'text')
+
+      entry.update_columns(
+        title: analysis[:title],
+        ai_mood_label: analysis[:mood],
+        ai_color_theme: analysis[:color_theme],
+        ai_background_style: analysis[:background_style],
+        ai_summary: analysis[:summary],
+        ai_nutshell: analysis[:nutshell]
+      )
+    rescue => e
+      Rails.logger.error "Text processing failed: #{e.message}"
+      # Set a default title if AI processing fails
+      entry.update_column(:title, "Journal Entry - #{entry.entry_date.strftime('%B %d, %Y')}")
+    end
+  end
+
+  def get_audio_transcription(audio_file)
+    client = OpenAI::Client.new(access_token: ENV['OPENAI_ACCESS_TOKEN'])
+
+    file_extension = audio_file.content_type.include?('webm') ? '.webm' : '.mp4'
+
+    temp_file = Tempfile.new(['audio', file_extension])
+    temp_file.binmode
+    temp_file.write(audio_file.download)
+    temp_file.rewind
+
+    begin
+      response = client.audio.transcribe(
+        parameters: {
+          model: "whisper-1",
+          file: File.open(temp_file.path, "rb")
+        }
+      )
+
+      response["text"]
+    ensure
+      temp_file.close
+      temp_file.unlink
+    end
   end
 end

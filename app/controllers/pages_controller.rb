@@ -6,4 +6,8 @@ class PagesController < ApplicationController
     @total_entries = current_user.journal_entries.count
     # Add emotion analytics here later
   end
+
+  def home
+    @selected_date = params[:date] || Date.current.to_s
+  end
 end
