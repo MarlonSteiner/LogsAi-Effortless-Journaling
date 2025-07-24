@@ -1,24 +1,30 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('turbo:load', function() {
   const toggleBtn = document.getElementById('navbarToggle');
   const sidebar = document.getElementById('simpleSidebar');
   const overlay = document.getElementById('sidebarOverlay');
   const closeBtn = document.getElementById('closeSidebar');
 
-  // Open sidebar
-  toggleBtn.addEventListener('click', function() {
-    sidebar.classList.add('open');
-    overlay.classList.add('show');
-  });
+  console.log('Navbar JS loaded'); // For debugging
 
-  // Close sidebar
-  closeBtn.addEventListener('click', function() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-  });
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      console.log('Toggle clicked'); // For debugging
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+    });
+  }
 
-  // Close when clicking overlay
-  overlay.addEventListener('click', function() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-  });
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  }
 });
