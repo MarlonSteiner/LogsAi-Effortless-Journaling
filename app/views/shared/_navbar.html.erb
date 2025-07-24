@@ -12,20 +12,39 @@
       <p>mind today User?</p>
     </div>
 
-    <!-- Calendar overview Link To -->
-    <%= link_to dashboard_calendar_path, class: "navbar-lewagon navbar-brand" do %>
-      <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png", alt: "Calendar" %>
+    <!-- Routing Button -->
+    <% if current_page?(root_path) %>
+    <!-- We're on homepage, link to calendar -->
+      <%= link_to dashboard_calendar_path, class: "navbar-lewagon navbar-brand" do %>
+        <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png", alt: "Go to Calendar" %>
+      <% end %>
+    <% else %>
+      <!-- We're NOT on homepage, link back to homepage -->
+      <%= link_to root_path, class: "navbar-lewagon navbar-brand" do %>
+        <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png", alt: "Go to Home" %>
+      <% end %>
     <% end %>
 
     <!-- Simple sliding sidebar -->
     <div class="simple-sidebar" id="simpleSidebar">
-      <button id="closeSidebar">Close</button>
-      <h3>Menu</h3>
-      <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
+      <div>
+        <button id="closeSidebar">Close</button>
+      </div>
+      <div>
+        <input type="text" placeholder="🔎 search">
+      </div>
+      <div>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Premium</a></li>
+          <li><a href="#">About us</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="d-flex align-items-center gap-1">
+          <div class="avatar-circle"><%= current_user.logo_initial %></div>
+          <p class="mb-0">Account</p>
+      </div>
     </div>
 
     <!-- Dark background overlay -->
