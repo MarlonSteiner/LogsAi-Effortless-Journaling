@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_23_152555) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_24_095036) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -64,8 +64,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_23_152555) do
     t.text "ai_background_style"
     t.text "ai_summary"
     t.text "ai_nutshell"
+    t.index ["entry_date"], name: "index_journal_entries_on_entry_date"
+    t.index ["input_type"], name: "index_journal_entries_on_input_type"
+    t.index ["user_id", "entry_date"], name: "index_journal_entries_on_user_and_date"
     t.index ["user_id"], name: "index_journal_entries_on_user_id"
-    t.check_constraint "(input_type::text = ANY (ARRAY['text'::character varying, 'speech'::character varying, 'image'::character varying]::text[])) OR input_type IS NULL", name: "valid_input_type"
+    t.check_constraint "input_type::text = ANY (ARRAY['text'::character varying, 'image'::character varying, 'video'::character varying, 'audio'::character varying]::text[])", name: "valid_input_type"
   end
 
   create_table "mood_summaries", force: :cascade do |t|

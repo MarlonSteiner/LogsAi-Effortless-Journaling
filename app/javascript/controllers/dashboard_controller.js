@@ -2,96 +2,169 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["recordingInterface", "entryDisplay", "entryTitle", "entryNutshell", "entryFullText", "entryMedia", "loadingState"]
+  static targets = ["recordingInterface", "entryDisplay", "dateInput"]
+  static values = {
+    currentDate: String,
+    createUrl: String,
+    showUrl: String
+  }
 
   connect() {
-    this.selectedDate = new Date().toISOString().split('T')[0]
-    this.currentEntry = null
-    // Note: Calendar generation will be handled by your teammate's navbar
-    this.loadEntryForSelectedDate()
+    this.loadEntryForDate()
   }
 
-  // Make selectedDate accessible to other controllers
-  get selectedDate() {
-    return this._selectedDate || new Date().toISOString().split('T')[0]
+  // Handle date changes
+  dateChanged() {
+    const newDate = this.dateInputTarget.value
+    this.currentDateValue = newDate
+    this.loadEntryForDate()
   }
 
-  set selectedDate(date) {
-    this._selectedDate = date
-  }
-
-  // Method for your teammate's navbar to call when date changes
-  setSelectedDate(date) {
-    this.selectedDate = date
-    this.loadEntryForSelectedDate()
-  }
-
-  async loadEntryForSelectedDate() {
+  // Load entry for current date
+  async loadEntryForDate() {
     try {
-      const response = await fetch(`/journal_entries/for_date/${this.selectedDate}`)
-      const data = await response.json()
+      const url = this.showUrlValue.replace('DATE_PLACEHOLDER', this.currentDateValue)
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
 
-      if (data.success && data.entry) {
-        this.showEntryDisplay(data.entry)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.entry) {
+        this.showEntryDisplay(result.entry)
       } else {
         this.showRecordingInterface()
       }
     } catch (error) {
       console.error('Error loading entry:', error)
-      this.showRecordingInterface()
+      this.showRecordingInterface() // Default to recording interface on error
     }
   }
 
+  // Show recording interface (no entry exists)
   showRecordingInterface() {
     this.recordingInterfaceTarget.style.display = 'block'
     this.entryDisplayTarget.style.display = 'none'
-    this.currentEntry = null
   }
 
+  // Show entry display (entry exists)
   showEntryDisplay(entry) {
     this.recordingInterfaceTarget.style.display = 'none'
     this.entryDisplayTarget.style.display = 'block'
 
-    // Populate entry data with null checks
-    this.entryTitleTarget.textContent = entry.title || 'Untitled Entry'
-    this.entryNutshellTarget.textContent = entry.ai_nutshell || entry.ai_summary || (entry.content ? entry.content.substring(0, 100) + '...' : 'No content available')
-    this.entryFullTextTarget.textContent = entry.ai_summary || entry.content || 'No content available'
+    // Update entry content
+    this.updateEntryContent(entry)
+  }
 
-    // Show media if exists
-    if (entry.has_media && entry.media_url) {
-      this.entryMediaTarget.style.display = 'block'
+  // Update entry content in the display
+  updateEntryContent(entry) {
+    const titleElement = this.entryDisplayTarget.querySelector('.entry-title')
+    const nutshellElement = this.entryDisplayTarget.querySelector('.entry-nutshell')
+    const summaryElement = this.entryDisplayTarget.querySelector('.entry-summary')
+    const mediaElement = this.entryDisplayTarget.querySelector('.entry-media')
+    const moodElement = this.entryDisplayTarget.querySelector('.entry-mood')
 
-      if (entry.media_type === 'image') {
-        this.entryMediaTarget.innerHTML = `<img src="${entry.media_url}" style="max-width: 100%; border-radius: 8px;">`
-      } else if (entry.media_type === 'video') {
-        this.entryMediaTarget.innerHTML = `<video controls style="max-width: 100%; border-radius: 8px;"><source src="${entry.media_url}"></video>`
-      }
-    } else {
-      this.entryMediaTarget.style.display = 'none'
+    if (titleElement) titleElement.textContent = entry.title || 'Untitled Entry'
+    if (nutshellElement) nutshellElement.textContent = entry.ai_nutshell || ''
+    if (summaryElement) summaryElement.textContent = entry.ai_summary || ''
+
+    // Handle mood display
+    if (moodElement && entry.ai_mood_label) {
+      moodElement.textContent = entry.ai_mood_label
+      moodElement.className = `entry-mood mood-${entry.ai_mood_label.toLowerCase().replace(/\s+/g, '-')}`
     }
 
-    this.currentEntry = entry
+    // Handle media display
+    if (mediaElement && entry.media_url) {
+      this.displayMedia(mediaElement, entry)
+    }
   }
 
-  // Refresh content after camera upload
-  refreshContent() {
-    this.loadEntryForSelectedDate()
+  // Display media based on input type
+  displayMedia(container, entry) {
+    container.innerHTML = '' // Clear previous content
+
+    if (!entry.media_url) return
+
+    switch (entry.input_type) {
+      case 'image':
+        const img = document.createElement('img')
+        img.src = entry.media_url
+        img.alt = 'Journal entry image'
+        img.className = 'img-fluid rounded'
+        container.appendChild(img)
+        break
+
+      case 'video':
+        const video = document.createElement('video')
+        video.src = entry.media_url
+        video.controls = true
+        video.className = 'w-100 rounded'
+        video.setAttribute('playsinline', '')
+        container.appendChild(video)
+        break
+
+      case 'audio':
+        // Don't show anything for audio - just transcribed text
+        break
+
+      case 'text':
+        // Text entries don't have media files
+        const textIndicator = document.createElement('div')
+        textIndicator.className = 'text-entry-indicator'
+        textIndicator.innerHTML = '<i class="fas fa-pen"></i> Text Entry'
+        container.appendChild(textIndicator)
+        break
+    }
   }
 
-  // Action methods
-  startRecording() {
-    alert('Recording functionality will be implemented by your teammate')
+  // Handle entry creation from audio controller
+  entryCreated(event) {
+    const entry = event.detail
+    this.showEntryDisplay(entry)
   }
 
-  openTextEntry() {
-    window.location.href = '/journal_entries/new'
+  // Navigate to text entry form
+  goToTextEntry() {
+    window.location.href = `/journal_entries/new?date=${this.currentDateValue}`
   }
 
-  toggleEntryOptions() {
-    alert('Entry options menu to be implemented')
+  // Handle edit entry
+  editEntry() {
+    // You can implement edit functionality here
+    console.log('Edit entry clicked')
   }
 
-  toggleNutshellOptions() {
-    alert('Nutshell options menu to be implemented')
+  // Handle delete entry
+  async deleteEntry() {
+    if (!confirm('Are you sure you want to delete this entry?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/journal_entries/${this.currentEntryId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
+      if (response.ok) {
+        this.showRecordingInterface()
+      } else {
+        alert('Failed to delete entry. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error deleting entry:', error)
+      alert('An error occurred. Please try again.')
+    }
   }
 }
