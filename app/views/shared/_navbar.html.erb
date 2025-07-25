@@ -1,16 +1,18 @@
 <div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
   <div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between w-100">
 
+    </div>
     <!-- Calendar Overview Link To-->
   <button class="navbar-toggler" type="button" id="navbarToggle">
     <span class="navbar-toggler-icon"></span>
   </button>
 
     <!-- Greeting text-->
-    <div>
-      <p>What's on your 🪶</p>
-      <p>mind today User?</p>
-    </div>
+  <div class="flex-grow-1 text-center">
+    <div>What's on your 🪶</div>
+    <div>mind today <%= current_user&.first_name || 'User' %>?</div>
+  </div>
 
     <!-- Routing Button -->
     <% if current_page?(root_path) %>
