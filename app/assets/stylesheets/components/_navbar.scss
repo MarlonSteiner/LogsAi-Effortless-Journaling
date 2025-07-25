@@ -1,3 +1,4 @@
+// original le wagon template css
 .navbar-lewagon {
   justify-content: space-between;
   background: white;
@@ -11,6 +12,7 @@
   width: 40px;
 }
 
+// Sliding Menu
 .simple-sidebar {
   position: fixed;
   top: 0;
@@ -42,3 +44,5 @@
 .sidebar-overlay.show {
   display: block;
 }
+
+// Sliding Menu
