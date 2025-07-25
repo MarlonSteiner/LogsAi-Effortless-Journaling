@@ -1,0 +1,40 @@
+<!-- app/views/shared/calendar/_grid.html.erb -->
+<div class="calendar-grid">
+  <!-- Day Headers -->
+  <div class="day-headers">
+    <% %w[Mon Tue Wed Thu Fri Sat Sun].each do |day| %>
+      <div class="day-header"><%= day %></div>
+    <% end %>
+  </div>
+
+  <!-- Calendar Days -->
+  <div class="calendar-days">
+    <%
+      # Calculate calendar layout
+      first_day = Date.new(selected_year, selected_month, 1)
+      # Convert Sunday=0 to Monday=0 (Monday as first day)
+      offset = (first_day.wday == 0 ? 6 : first_day.wday - 1)
+      days_in_month = first_day.end_of_month.day
+    %>
+
+    <!-- Empty cells for offset -->
+    <% offset.times do %>
+      <div class="calendar-day empty"></div>
+    <% end %>
+
+    <!-- Days of the month -->
+    <% (1..days_in_month).each do |day| %>
+      <%
+        current_date = Date.new(selected_year, selected_month, day)
+        entry = entries_by_date[current_date]&.first
+        emotion_category = entry ? emotion_color_category(entry.ai_mood_label) : 'neutral'
+      %>
+
+      <div class="calendar-day <%= emotion_category %> <%= 'selected' if selected_date == current_date %>"
+            data-action="click->calendar#selectDate"
+            data-date="<%= current_date.to_s %>">
+        <%= day %>
+      </div>
+    <% end %>
+  </div>
+</div>

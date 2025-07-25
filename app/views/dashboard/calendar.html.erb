@@ -1,1 +1,20 @@
-the calendar overview age is working!
+<div class="calendar-page"
+    data-controller="calendar"
+    data-calendar-selected-month-value="<%= @selected_month %>"
+    data-calendar-selected-year-value="<%= @selected_year %>">
+
+  <%= render 'shared/calendar/filters',
+            available_years: @available_years,
+            selected_month: @selected_month,
+            selected_year: @selected_year %>
+
+  <%= render 'shared/calendar/grid',
+            entries_by_date: @entries_by_date,
+            selected_month: @selected_month,
+            selected_year: @selected_year,
+            selected_date: @selected_date %>
+
+  <%= render 'shared/calendar/entry_display',
+            entry: @selected_entry,
+            selected_date: @selected_date %>
+</div>

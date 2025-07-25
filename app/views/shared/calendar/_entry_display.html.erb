@@ -1,0 +1,34 @@
+<!-- app/views/shared/calendar/_entry_display.html.erb -->
+<% if entry %>
+  <div class="selected-entry" data-calendar-target="entryDisplay">
+    <div class="entry-header">
+      <div class="entry-date"><%= selected_date.strftime("%B %d, %Y") %></div>
+    </div>
+
+    <div class="entry-content">
+      <h1 class="entry-title"><%= entry.title %></h1>
+
+      <% if entry.ai_nutshell.present? %>
+        <div class="nutshell-section">
+          <h3 class="section-label">IN A NUTSHELL</h3>
+          <p class="entry-nutshell"><%= entry.ai_nutshell %></p>
+        </div>
+      <% end %>
+
+      <% if entry.ai_summary.present? %>
+        <div class="summary-section">
+          <h3 class="section-label">FULL SUMMARY</h3>
+          <p class="entry-summary"><%= entry.ai_summary %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% elsif selected_date %>
+  <div class="no-entry" data-calendar-target="entryDisplay">
+    <p>No entry found for <%= selected_date.strftime("%B %d, %Y") %></p>
+  </div>
+<% else %>
+  <div class="no-entry" data-calendar-target="entryDisplay" style="display: none;">
+    <!-- Hidden until date is selected -->
+  </div>
+<% end %>

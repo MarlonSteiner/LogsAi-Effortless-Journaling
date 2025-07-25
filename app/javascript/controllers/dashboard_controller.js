@@ -52,14 +52,17 @@ export default class extends Controller {
   showRecordingInterface() {
     this.recordingInterfaceTarget.style.display = 'block'
     this.entryDisplayTarget.style.display = 'none'
+    this.textEntryFormTarget.style.display = 'none'
+    this.calendarSectionTarget.style.display = 'block' // Show calendar
   }
 
   // Show entry display (entry exists)
   showEntryDisplay(entry) {
     this.recordingInterfaceTarget.style.display = 'none'
+    this.textEntryFormTarget.style.display = 'none'
     this.entryDisplayTarget.style.display = 'block'
+    this.calendarSectionTarget.style.display = 'block' // Show calendar
 
-    // Update entry content
     this.updateEntryContent(entry)
   }
 
@@ -133,7 +136,7 @@ export default class extends Controller {
     this.calendarSectionTarget.style.display = 'none' // Hide calendar in text form
   }
 
-  // Submit text entry
+  // Submit text entry (UPDATED for Ajax calendar integration)
   async submitTextEntry(event) {
     event.preventDefault()
 
@@ -144,6 +147,8 @@ export default class extends Controller {
         method: 'POST',
         body: formData,
         headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+          'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         }
       })
@@ -153,8 +158,18 @@ export default class extends Controller {
       const result = await response.json()
 
       if (result.success) {
+        // Trigger custom event for calendar to listen
+        window.dispatchEvent(new CustomEvent('entryCreated', {
+          detail: result.entry
+        }))
+
+        // Update the main dashboard
         this.showEntryDisplay(result.entry)
+
+        // Reset form
+        event.target.reset()
       } else {
+        console.error('Text entry creation failed:', result.errors)
         alert('Failed to create entry')
       }
     } catch (error) {
@@ -163,26 +178,16 @@ export default class extends Controller {
     }
   }
 
-  // Update the existing methods
-  showRecordingInterface() {
-    this.recordingInterfaceTarget.style.display = 'block'
-    this.entryDisplayTarget.style.display = 'none'
-    this.textEntryFormTarget.style.display = 'none'
-    this.calendarSectionTarget.style.display = 'block' // Show calendar
-  }
-
-  showEntryDisplay(entry) {
-    this.recordingInterfaceTarget.style.display = 'none'
-    this.textEntryFormTarget.style.display = 'none'
-    this.entryDisplayTarget.style.display = 'block'
-    this.calendarSectionTarget.style.display = 'block' // Show calendar
-
-    this.updateEntryContent(entry)
-  }
-
-  // Handle entry creation from audio controller
+  // Handle entry creation from audio controller (UPDATED for Ajax calendar integration)
   entryCreated(event) {
     const entry = event.detail
+
+    // Trigger custom event for calendar to listen
+    window.dispatchEvent(new CustomEvent('entryCreated', {
+      detail: entry
+    }))
+
+    // Update the main dashboard
     this.showEntryDisplay(entry)
   }
 
