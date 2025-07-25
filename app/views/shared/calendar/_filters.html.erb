@@ -1,0 +1,48 @@
+<!-- app/views/shared/calendar/_filters.html.erb -->
+<div class="filter-section">
+  <div class="filter-buttons">
+    <button class="filter-btn"
+            data-calendar-target="monthButton"
+            data-action="click->calendar#toggleMonthPicker">
+      Month
+    </button>
+    <button class="filter-btn"
+            data-calendar-target="yearButton"
+            data-action="click->calendar#toggleYearPicker">
+      Year
+    </button>
+  </div>
+
+  <!-- Month Picker -->
+  <div class="month-picker" data-calendar-target="monthPicker" style="display: none;">
+    <div class="picker-scroll-container">
+      <% Date::MONTHNAMES.compact.each_with_index do |month_name, index| %>
+        <button class="month-option <%= 'selected' if (index + 1) == selected_month %>"
+                data-action="click->calendar#selectMonth"
+                data-month="<%= index + 1 %>">
+          <%= month_name %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Year Picker -->
+  <div class="year-picker" data-calendar-target="yearPicker" style="display: none;">
+    <div class="picker-scroll-container">
+      <% available_years.each do |year| %>
+        <button class="year-option <%= 'selected' if year == selected_year %>"
+                data-action="click->calendar#selectYear"
+                data-year="<%= year %>">
+          <%= year %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Current Month/Year Display -->
+<div class="current-period">
+  <h2 data-calendar-target="currentPeriod">
+    <%= Date::MONTHNAMES[selected_month] %> <%= selected_year %>
+  </h2>
+</div>

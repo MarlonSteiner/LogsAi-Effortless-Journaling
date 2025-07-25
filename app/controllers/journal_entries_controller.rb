@@ -1,4 +1,3 @@
-# app/controllers/journal_entries_controller.rb
 class JournalEntriesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_journal_entry, only: [:show, :edit, :update, :destroy]
@@ -97,6 +96,8 @@ class JournalEntriesController < ApplicationController
             success: true,
             entry: {
               id: @journal_entry.id,
+              date: @journal_entry.entry_date.to_s,
+              emotion_category: emotion_color_category(@journal_entry.ai_mood_label),
               title: @journal_entry.title,
               content: @journal_entry.content,
               ai_mood_label: @journal_entry.ai_mood_label,
@@ -104,13 +105,14 @@ class JournalEntriesController < ApplicationController
               ai_nutshell: @journal_entry.ai_nutshell,
               input_type: @journal_entry.input_type,
               entry_date: @journal_entry.entry_date,
+              formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
               media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil
             }
           }
         end
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: { success: false, error: @journal_entry.errors.full_messages.join(', ') } }
+        format.json { render json: { success: false, errors: @journal_entry.errors.full_messages } }
       end
     end
   end
@@ -152,6 +154,27 @@ class JournalEntriesController < ApplicationController
     @journal_entry.media_file.attached? || @journal_entry.content.present?
   end
 
+  # Helper method to determine emotion color category for calendar
+  def emotion_color_category(ai_mood_label)
+    return 'neutral' unless ai_mood_label
+
+    good_emotions = %w[joyful excited energetic grateful loved content peaceful calm optimistic hopeful confident inspired proud]
+    okay_emotions = %w[contemplative focused curious nostalgic determined tired]
+    bad_emotions = %w[anxious worried stressed frustrated angry overwhelmed confused restless sad lonely disappointed]
+
+    mood = ai_mood_label.downcase
+
+    if good_emotions.include?(mood)
+      'good'
+    elsif okay_emotions.include?(mood)
+      'okay'
+    elsif bad_emotions.include?(mood)
+      'bad'
+    else
+      'neutral'
+    end
+  end
+
   def process_with_ai(entry)
     case entry.input_type
     when 'audio'
@@ -165,7 +188,7 @@ class JournalEntriesController < ApplicationController
 
   def process_audio_entry(entry)
     Rails.logger.info "=== AUDIO PROCESSING STARTED ==="
-      return unless entry.media_file.attached?
+    return unless entry.media_file.attached?
 
     # For audio entries, we'll use OpenAI's Whisper API to transcribe
     # and then analyze the transcription

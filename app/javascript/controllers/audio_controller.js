@@ -13,6 +13,7 @@ export default class extends Controller {
     this.audioChunks = []
     this.isRecording = false
     this.stream = null
+    this.audioBlob = null // Add this property
 
     // Check if browser supports audio recording
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -107,13 +108,13 @@ export default class extends Controller {
       return
     }
 
-    // Create audio blob
-    const audioBlob = new Blob(this.audioChunks, {
+    // Create audio blob and store it
+    this.audioBlob = new Blob(this.audioChunks, {
       type: this.getSupportedMimeType()
     })
 
     // Check if recording is too short (less than 1 second)
-    if (audioBlob.size < 1000) {
+    if (this.audioBlob.size < 1000) {
       this.showError("Recording too short. Please record for at least 1 second.")
       this.cleanup()
       return
@@ -123,52 +124,74 @@ export default class extends Controller {
     this.showProcessing()
 
     // Upload and process the audio
-    this.uploadAudio(audioBlob)
+    this.uploadAudio()
   }
 
-  async uploadAudio(audioBlob) {
+  async uploadAudio() {
+    if (!this.audioBlob) {
+      console.error('No audio to upload')
+      return
+    }
+
     try {
-      // Create form data
+      this.updateRecordingStatus('Processing...')
+
       const formData = new FormData()
-      formData.append('journal_entry[media_file]', audioBlob, `recording_${Date.now()}.webm`)
-      formData.append('journal_entry[input_type]', 'audio')
+      formData.append('journal_entry[media_file]', this.audioBlob, 'recording.webm')
+      formData.append('journal_entry[input_type]', 'audio') // Fixed: should be 'audio' not 'speech'
       formData.append('journal_entry[entry_date]', this.entryDateValue)
 
-      // Add CSRF token
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      if (csrfToken) {
-        formData.append('authenticity_token', csrfToken)
-      }
-
-      // Upload to server
       const response = await fetch(this.createUrlValue, {
         method: 'POST',
-        body: formData,
         headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json'
-        }
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
+          'Accept': 'application/json'  // Request JSON response
+        },
+        body: formData
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      const data = await response.json()
 
-      const result = await response.json()
+      if (data.success) {
+        // Trigger custom event for calendar to listen
+        window.dispatchEvent(new CustomEvent('entryCreated', {
+          detail: data.entry
+        }))
 
-      if (result.success) {
-        // Trigger dashboard refresh to show the new entry
-        this.dispatch("entryCreated", { detail: result.entry })
-        this.cleanup()
+        // Trigger existing dashboard event (for main page)
+        this.dispatch('entryCreated', { detail: data.entry })
+
+        this.updateRecordingStatus('Entry created successfully!')
+
+        // Reset audio recording state
+        this.resetRecording()
+
       } else {
-        throw new Error(result.error || 'Failed to process recording')
+        console.error('Upload failed:', data.errors)
+        this.updateRecordingStatus('Upload failed. Please try again.')
       }
 
     } catch (error) {
       console.error('Error uploading audio:', error)
-      this.showError('Failed to process recording. Please try again.')
-      this.cleanup()
+      this.updateRecordingStatus('Upload failed. Please try again.')
     }
+  }
+
+  updateRecordingStatus(message) {
+    if (this.hasRecordingStatusTarget) {
+      this.recordingStatusTarget.textContent = message
+    }
+  }
+
+  resetRecording() {
+    this.audioBlob = null
+    this.audioChunks = []
+    this.updateUI()
+
+    // Clear status message after a delay
+    setTimeout(() => {
+      this.updateRecordingStatus('')
+    }, 2000)
   }
 
   getSupportedMimeType() {
@@ -247,6 +270,7 @@ export default class extends Controller {
   cleanup() {
     this.isRecording = false
     this.audioChunks = []
+    this.audioBlob = null
 
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop())

@@ -1,0 +1,245 @@
+// app/assets/stylesheets/components/_calendar.scss
+// Calendar Page Styles
+
+.calendar-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem;
+
+  // Filter Section
+  .filter-section {
+    margin-bottom: 2rem;
+
+    .filter-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .filter-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover, &.active {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+      }
+    }
+
+    .month-picker, .year-picker {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 1rem;
+
+      .picker-scroll-container {
+        overflow-x: auto;
+        display: flex;
+        gap: 0.75rem;
+
+        // Hide scrollbar but keep functionality
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+
+      .month-option, .year-option {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-weight: 500;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        &.selected {
+          background: rgba(147, 90, 240, 1);
+          border-color: rgba(147, 90, 240, 1);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+
+  // Current Period Display
+  .current-period {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+  }
+
+  // Calendar Grid
+  .calendar-grid {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+
+    .day-headers {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+
+      .day-header {
+        text-align: center;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.5rem;
+      }
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+
+      .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+
+        &.empty {
+          cursor: default;
+        }
+
+        &:not(.empty):hover {
+          transform: scale(1.1);
+        }
+
+        &.selected {
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+        }
+
+        // Emotion-based colors (matching your color scheme)
+        &.good {
+          background: linear-gradient(135deg, #66bb6a, #4caf50);
+          color: white;
+        }
+
+        &.okay {
+          background: linear-gradient(135deg, #ffa726, #ff9800);
+          color: white;
+        }
+
+        &.bad {
+          background: linear-gradient(135deg, #f48fb1, #e91e63);
+          color: white;
+        }
+
+        &.neutral {
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+  }
+
+  // Entry Display Section
+  .selected-entry, .no-entry {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+
+    .entry-header {
+      margin-bottom: 1.5rem;
+
+      .entry-date {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+      }
+    }
+
+    .entry-content {
+      .entry-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        line-height: 1.3;
+      }
+
+      .nutshell-section, .summary-section {
+        margin-bottom: 1.5rem;
+
+        .section-label {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 0.5rem;
+          letter-spacing: 0.05em;
+        }
+
+        .entry-nutshell, .entry-summary {
+          font-size: 1rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.9);
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .no-entry {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 768px) {
+  .calendar-page {
+    padding: 0.5rem;
+
+    .filter-section {
+      .month-picker {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .calendar-grid {
+      padding: 1rem;
+
+      .calendar-days .calendar-day {
+        font-size: 0.9rem;
+      }
+    }
+
+    .selected-entry, .no-entry {
+      padding: 1.5rem;
+
+      .entry-content .entry-title {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
