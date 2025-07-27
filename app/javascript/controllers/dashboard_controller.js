@@ -13,6 +13,38 @@ export default class extends Controller {
     this.loadEntryForDate()
   }
 
+  // NEW METHOD - Handle clicking on calendar dates
+  loadDateContent(event) {
+    const date = event.currentTarget.dataset.date
+
+    // Update selected date styling
+    this.updateSelectedDate(event.currentTarget)
+
+    // Update the current date and load content
+    this.currentDateValue = date
+    this.loadEntryForDate()
+
+    // Update the form date field
+    this.updateFormDate(date)
+  }
+
+  // NEW METHOD - Visual feedback for selected date
+  updateSelectedDate(clickedElement) {
+    const allDateCards = this.element.querySelectorAll('.date-card')
+    allDateCards.forEach(card => {
+      card.classList.remove('bg-primary', 'text-white')
+    })
+    clickedElement.classList.add('bg-primary', 'text-white')
+  }
+
+  // NEW METHOD - Update form date when date changes
+  updateFormDate(date) {
+    const dateInput = this.textEntryFormTarget.querySelector('input[name="journal_entry[entry_date]"]')
+    if (dateInput) {
+      dateInput.value = date
+    }
+  }
+
   // Handle date changes
   dateChanged() {
     const newDate = this.dateInputTarget.value

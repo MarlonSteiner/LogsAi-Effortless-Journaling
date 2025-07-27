@@ -1,0 +1,21 @@
+// app/assets/stylesheets/components/_horizontal_calendar.scss
+@import '../config/colors';
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.date-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &.bg-primary {
+    background-color: $selected-button !important;
+    color: white !important;
+  }
+}
