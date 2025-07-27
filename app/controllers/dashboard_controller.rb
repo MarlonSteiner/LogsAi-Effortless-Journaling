@@ -42,6 +42,37 @@ class DashboardController < ApplicationController
     @selected_entry = @selected_date ? @entries_by_date[@selected_date]&.first : nil
   end
 
+  # Handle Ajax requests to display elements if there is a journal entry or not
+  def load_date_content
+    date = Date.parse(params[:date])
+    entry = current_user.journal_entries.find_by(entry_date: date)
+
+    respond_to do |format|
+      format.json do
+        if entry
+          render json: {
+            has_entry: true,
+            entry: {
+              id: entry.id,
+              title: entry.title,
+              content: entry.content,
+              ai_nutshell: entry.ai_nutshell,
+              ai_summary: entry.ai_summary,
+              entry_date: date.strftime("%B %d, %Y")
+            }
+          }
+        else
+          render json: {
+            has_entry: false,
+            selected_date: date.strftime("%B %d, %Y")
+          }
+        end
+      end
+    end
+  rescue Date::Error
+    render json: { error: "Invalid date" }, status: 400
+  end
+
   private
 
   # Helper method to determine emotion color category

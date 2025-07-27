@@ -5,7 +5,7 @@
     </div>
     <!-- Calendar Overview Link To-->
   <button class="navbar-toggler" type="button" id="navbarToggle">
-    <span class="navbar-toggler-icon"></span>
+    <%= image_tag "menu_icon.svg", alt: "Menu", class: "menu-icon" %>
   </button>
 
     <!-- Greeting text-->
@@ -18,12 +18,12 @@
     <% if current_page?(root_path) %>
     <!-- We're on homepage, link to calendar -->
       <%= link_to dashboard_calendar_path, class: "navbar-lewagon navbar-brand" do %>
-        <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png", alt: "Go to Calendar" %>
+        <%= image_tag "overview_button_square.svg", alt: "Go to Calendar" %>
       <% end %>
     <% else %>
       <!-- We're NOT on homepage, link back to homepage -->
       <%= link_to root_path, class: "navbar-lewagon navbar-brand" do %>
-        <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png", alt: "Go to Home" %>
+        <%= image_tag "overview_button_diamond.svg", alt: "Go to Home" %>
       <% end %>
     <% end %>
 

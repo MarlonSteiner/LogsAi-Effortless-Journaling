@@ -14,3 +14,9 @@
 @import "components/auth";
 @import "components/audio_recording";
 @import "components/calendar_main";
+@import "components/horizontal_calendar";
+
+body {
+  color: $white;
+  background: $background;
+}

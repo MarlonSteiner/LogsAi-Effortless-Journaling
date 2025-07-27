@@ -1,0 +1,24 @@
+// app/assets/stylesheets/components/_horizontal_calendar.scss
+@import '../config/colors';
+
+.date-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid $border;
+
+  &:hover {
+    background-color: rgba(89, 38, 185, 0.1);
+    transform: translateY(-2px);
+    border-color: $icon;
+  }
+
+  &.bg-primary {
+    background: $selected-button !important;
+    color: white !important;
+    border: 2px solid #5926B9 !important;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

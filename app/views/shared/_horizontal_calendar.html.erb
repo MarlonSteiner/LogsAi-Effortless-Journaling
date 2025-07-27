@@ -1,9 +1,12 @@
-<!-- Show all dates -->
+<!-- shared/_horizontal_calendar.html.erb -->
 <div class="d-flex gap-2 my-3 overflow-auto">
   <% @date_range.each do |date| %>
-    <div class="border rounded px-2 text-center">
+    <div class="date-card border rounded px-2 text-center cursor-pointer"
+         data-action="click->dashboard#loadDateContent"
+         data-date="<%= date.to_s %>"
+         data-dashboard-current-class="bg-primary text-white">
       <% if date == @current_date %>
-        TODAY
+        <small>TODAY</small>
       <% end %>
       <div><%= date.day %></div>
       <div><%= date.strftime("%a") %></div>
