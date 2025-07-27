@@ -17,6 +17,15 @@
 @import "components/horizontal_calendar";
 
 body {
+  font-family: $body-font;
+  letter-spacing: -0.03em; // -3% letter spacing (recommended)
+  // OR letter-spacing: -3px; // -3px letter spacing (very tight)
   color: $white;
   background: $background;
+}
+
+// Apply to all text elements
+h1, h2, h3, h4, h5, h6, p, span, div, a, button {
+  font-family: $body-font;
+  letter-spacing: -0.02em;
 }
