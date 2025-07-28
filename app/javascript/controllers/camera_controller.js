@@ -3,6 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["popup", "takeInput", "uploadInput"]
+  static values = { entryDate: String }
 
   connect() {
     // Close popup when clicking outside
@@ -48,13 +49,8 @@ export default class extends Controller {
     formData.append('journal_entry[media_file]', file)
     formData.append('journal_entry[input_type]', file.type.startsWith('video/') ? 'video' : 'image')
 
-    // Get selected date from dashboard controller instead of today's date
-    const dashboardController = this.application.getControllerForElementAndIdentifier(
-      document.querySelector('[data-controller="dashboard"]'),
-      'dashboard'
-    )
-    const selectedDate = dashboardController ? dashboardController.selectedDate : new Date().toISOString().split('T')[0]
-    formData.append('journal_entry[entry_date]', selectedDate)
+    // Get selected date from dashboard controller
+    formData.append('journal_entry[entry_date]', this.entryDateValue)
 
     try {
       // Show loading
@@ -72,10 +68,10 @@ export default class extends Controller {
       const data = await response.json()
 
       if (data.success) {
-        // Refresh the dashboard content to show the new entry
-        if (dashboardController) {
-          dashboardController.refreshContent()
-        }
+        // Dispatch entryCreated event like audio and text do
+        window.dispatchEvent(new CustomEvent('entryCreated', {
+          detail: data.entry
+        }))
       } else {
         alert('Error: ' + data.errors.join(', '))
       }

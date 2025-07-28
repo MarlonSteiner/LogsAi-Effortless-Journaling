@@ -12,7 +12,6 @@ export default class extends Controller {
   connect() {
     this.loadEntryForDate()
   }
-
   // NEW METHOD - Handle clicking on calendar dates
   loadDateContent(event) {
     const date = event.currentTarget.dataset.date
@@ -26,6 +25,21 @@ export default class extends Controller {
 
     // Update the form date field
     this.updateFormDate(date)
+
+    // Update the audio controller's entry date
+    const audioController = this.application.getControllerForElementAndIdentifier(this.element, 'audio')
+    if (audioController) {
+      audioController.entryDateValue = date
+    }
+
+    // NEW: Update the camera controller's entry date (fixed search)
+    const cameraElement = document.querySelector('[data-controller*="camera"]')
+    const cameraController = cameraElement ? this.application.getControllerForElementAndIdentifier(cameraElement, 'camera') : null
+    if (cameraController) {
+      cameraController.entryDateValue = date
+    } else {
+      console.log("DEBUG: Camera controller not found")
+    }
   }
 
   // NEW METHOD - Visual feedback for selected date
@@ -55,6 +69,7 @@ export default class extends Controller {
   // Load entry for current date
   async loadEntryForDate() {
     try {
+
       const url = this.showUrlValue.replace('DATE_PLACEHOLDER', this.currentDateValue)
       const response = await fetch(url, {
         headers: {
@@ -213,13 +228,7 @@ export default class extends Controller {
   // Handle entry creation from audio controller (UPDATED for Ajax calendar integration)
   entryCreated(event) {
     const entry = event.detail
-
-    // Trigger custom event for calendar to listen
-    window.dispatchEvent(new CustomEvent('entryCreated', {
-      detail: entry
-    }))
-
-    // Update the main dashboard
+    // Just update the main dashboard - don't dispatch another event!
     this.showEntryDisplay(entry)
   }
 
