@@ -4,7 +4,7 @@
     data-camera-entry-date-value="<%= @selected_date %>">
   <!-- Camera Button -->
   <button type="button" class="camera-btn" data-action="click->camera#showOptions">
-    📷
+    <%= image_tag "camera_button.svg", alt: "Image Entry", class: "image-icon" %>
   </button>
 
   <!-- Simple Popup -->
@@ -40,14 +40,8 @@
 
 <style>
 .camera-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #7c3aed;
+  background: transparent;
   border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
 }
 
 .camera-popup {
