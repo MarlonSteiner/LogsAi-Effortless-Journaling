@@ -1,2 +1,101 @@
+<div class="dashboard-container"
+    data-controller="dashboard audio"
+    data-dashboard-current-date-value="<%= @selected_date %>"
+    data-dashboard-show-url-value="<%= for_date_journal_entries_path('DATE_PLACEHOLDER') %>"
+    data-audio-entry-date-value="<%= @selected_date %>"
+    data-audio-create-url-value="<%= journal_entries_path %>"
+    data-action="entryCreated@window->dashboard#entryCreated">
 
-<%= render 'shared/horizontal_calendar' %>
+      <!-- CALENDAR SECTION HERE -->
+  <div class="calendar-section" data-dashboard-target="calendarSection">
+    <%= render 'shared/horizontal_calendar' %>
+  </div>
+
+  <!-- Recording Interface (No Entry) -->
+  <div class="recording-interface" data-dashboard-target="recordingInterface">
+
+    <!-- Main Record Button -->
+    <div class="record-section">
+      <button class="record-button"
+              data-audio-target="recordButton"
+              data-action="click->audio#toggleRecording">
+        <i class="fas fa-microphone"></i>
+      </button>
+      <div class="record-label">RECORD</div>
+      <div class="recording-status" data-audio-target="recordingStatus"></div>
+    </div>
+
+    <!-- Secondary Options -->
+    <div class="secondary-options">
+      <%= render 'shared/camera_button' %>
+      <button class="text-entry-button" data-action="click->dashboard#showTextForm">
+        <span class="text-icon">T</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Text Entry Form (Dynamic) -->
+  <div class="text-entry-form" data-dashboard-target="textEntryForm" style="display: none;">
+
+    <div class="form-header">
+      <button class="back-button" data-action="click->dashboard#showRecordingInterface">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h2>Write Your Entry</h2>
+    </div>
+
+    <%= form_with model: JournalEntry.new, url: journal_entries_path,
+                  data: { action: "submit->dashboard#submitTextEntry" } do |f| %>
+
+      <%= f.hidden_field :input_type, value: "text" %>
+      <%= f.hidden_field :entry_date, value: @selected_date %>
+
+      <div class="form-group">
+        <%= f.text_area :content,
+                        placeholder: "What's on your mind today?",
+                        class: "text-input",
+                        rows: 8 %>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" data-action="click->dashboard#showRecordingInterface">
+          Cancel
+        </button>
+        <button type="submit" class="submit-btn">
+          Create Entry
+        </button>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Entry Display (Entry Exists) -->
+  <div class="entry-display" data-dashboard-target="entryDisplay" style="display: none;">
+
+    <div class="entry-header">
+      <div class="entry-date"></div>
+      <div class="entry-actions">
+        <button class="action-btn delete-btn" data-action="click->dashboard#deleteEntry">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="entry-content">
+      <h1 class="entry-title"></h1>
+
+      <div class="nutshell-section">
+        <h3 class="section-label">IN A NUTSHELL</h3>
+        <p class="entry-nutshell"></p>
+      </div>
+
+      <div class="summary-section">
+        <h3 class="section-label">FULL SUMMARY</h3>
+        <p class="entry-summary"></p>
+      </div>
+    </div>
+
+    <button class="new-entry-btn" data-action="click->dashboard#showRecordingInterface">
+      + New Entry
+    </button>
+  </div>
+</div>
