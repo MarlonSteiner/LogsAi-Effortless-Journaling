@@ -1,7 +1,7 @@
 <!-- shared/_horizontal_calendar.html.erb -->
 <div class="d-flex gap-2 my-3 overflow-auto">
   <% @date_range.each do |date| %>
-    <div class="date-card border rounded px-2 text-center cursor-pointer"
+    <div class="date-card border rounded-4 px-3 text-center cursor-pointer"
           data-action="click->dashboard#loadDateContent"
           data-date="<%= date.to_s %>"
           data-dashboard-current-class="bg-primary text-white">

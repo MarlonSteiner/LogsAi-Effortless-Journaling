@@ -1,4 +1,4 @@
-<div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
+<div class="navbar navbar-expand-sm navbar-light navbar-lewagon mt-4">
   <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between w-100">
 
@@ -8,10 +8,16 @@
     <%= image_tag "menu_icon.svg", alt: "Menu", class: "menu-icon" %>
   </button>
 
-    <!-- Greeting text-->
+  <!-- Greeting text-->
   <div class="flex-grow-1 text-center">
-    <div>What's on your 🪶</div>
-    <div>mind today <%= current_user&.first_name || 'User' %>?</div>
+    <% if defined?(@has_entry_today) && @has_entry_today %>
+      <!-- Show when there IS an entry -->
+      <div>Logs AI <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
+    <% else %>
+      <!-- Show when there is NO entry -->
+      <div>What's on your <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
+      <div>mind today <%= current_user&.first_name || 'User' %>?</div>
+    <% end %>
   </div>
 
     <!-- Routing Button -->
