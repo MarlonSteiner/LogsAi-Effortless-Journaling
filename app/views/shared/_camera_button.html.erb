@@ -1,5 +1,7 @@
 <!-- app/views/shared/_camera_button.html.erb -->
-<div class="camera-container" data-controller="camera">
+<div class="camera-container"
+    data-controller="camera"
+    data-camera-entry-date-value="<%= @selected_date %>">
   <!-- Camera Button -->
   <button type="button" class="camera-btn" data-action="click->camera#showOptions">
     <%= image_tag "camera_button.svg", alt: "Image Entry", class: "image-icon" %>

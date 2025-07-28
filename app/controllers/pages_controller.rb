@@ -8,12 +8,13 @@ class PagesController < ApplicationController
   end
 
   def home
-    @selected_date = params[:date] || Date.current.to_s
+    today = Date.current
 
-    # Calendar range: July 1st, 2025 to 7 days from today
-    start_date = Date.new(2025, 7, 1)
-    end_date = Date.current + 1.week
-    @current_date = Date.current
+    # 30 days back + 3 day buffer on each side = 36 total days
+    start_date = today - 30.days - 3.days  # 33 days ago
+    end_date = today + 3.days               # 3 days in future
+
+    @current_date = today
     @date_range = (start_date..end_date).to_a
   end
 end
