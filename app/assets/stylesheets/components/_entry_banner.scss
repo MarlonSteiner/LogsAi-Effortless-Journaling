@@ -1,0 +1,21 @@
+.entry-banner {
+  margin: 20px 0;
+
+  .banner-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .regenerate-banner-btn {
+    width: 100%;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    color: #6c757d;
+    font-size: 14px;
+  }
+}

@@ -1,10 +1,24 @@
 // app/assets/stylesheets/components/_horizontal_calendar.scss
 @import '../config/colors';
 
+.horizontal-calendar,
+.d-flex.gap-2.my-3.overflow-auto {
+  margin-top: 40px;
+  margin-bottom: 20px;
+  padding-top: 15px;
+}
+
 .date-card {
+  min-width: 58px;
+  min-height: 80px;
+  padding: 12px 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   &:hover {
     background-color: rgba(89, 38, 185, 0.1);
@@ -12,10 +26,24 @@
     border-color: $icon;
   }
 
+  &.selected,
   &.bg-primary {
     background: $selected-button !important;
     color: white !important;
     border: 2px solid #5926B9 !important;
+    transform: translateY(-2px);
+  }
+
+  div:first-child {
+    font-size: 1.3rem;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+
+  div:last-child {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 2px;
   }
 }
 

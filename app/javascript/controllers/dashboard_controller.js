@@ -2,7 +2,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["recordingInterface", "entryDisplay", "textEntryForm", "dateInput", "calendarSection"]
+  static targets = ["recordingInterface", "entryDisplay", "textEntryForm", "dateInput", "calendarSection", "calendarContainer", "dateCard"]
   static values = {
     currentDate: String,
     createUrl: String,
@@ -11,7 +11,122 @@ export default class extends Controller {
 
   connect() {
     this.loadEntryForDate()
+    this.setupScrollDetection() // Add this line
+
+    setTimeout(() => {
+      this.centerOnDate(this.currentDateValue)
+      this.selectDateCard(this.currentDateValue)
+    }, 100)
   }
+
+  centerOnDate(dateString) {
+    const targetCard = this.dateCardTargets.find(card =>
+      card.dataset.date === dateString
+    )
+
+    if (targetCard && this.hasCalendarContainerTarget) {
+      const container = this.calendarContainerTarget
+      const cardOffsetLeft = targetCard.offsetLeft
+      const cardWidth = targetCard.offsetWidth
+      const containerWidth = container.offsetWidth
+
+      const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2)
+
+      // Changed to smooth animation
+      container.scrollTo({
+        left: Math.max(0, scrollPosition),
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  setupScrollDetection() {
+    if (this.hasCalendarContainerTarget) {
+      let scrollTimeout
+      this.calendarContainerTarget.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout)
+        scrollTimeout = setTimeout(() => {
+          this.updateSelectionFromScroll()
+        }, 50) // Very fast response
+      })
+    }
+  }
+
+  // NEW method
+  selectDateCard(dateString) {
+    const targetCard = this.dateCardTargets.find(card =>
+      card.dataset.date === dateString
+    )
+    if (targetCard) {
+      this.updateSelectedDate(targetCard)
+    }
+  }
+
+  setupScrollDetection() {
+    if (this.hasCalendarContainerTarget) {
+      let scrollTimeout
+      this.calendarContainerTarget.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout)
+        scrollTimeout = setTimeout(() => {
+          this.updateSelectionFromScroll()
+        }, 50) // Fast response
+      })
+    }
+  }
+
+  updateSelectionFromScroll() {
+    if (!this.hasCalendarContainerTarget) return
+
+    const container = this.calendarContainerTarget
+    const containerCenter = container.scrollLeft + (container.offsetWidth / 2)
+
+    let bestCard = null
+    let bestScore = 0
+
+    this.dateCardTargets.forEach(card => {
+      const cardLeft = card.offsetLeft
+      const cardRight = cardLeft + card.offsetWidth
+      const cardCenter = cardLeft + (card.offsetWidth / 2)
+
+      // How much of the card is in the center area
+      const centerAreaLeft = containerCenter - (card.offsetWidth * 0.4)
+      const centerAreaRight = containerCenter + (card.offsetWidth * 0.4)
+
+      const overlapLeft = Math.max(cardLeft, centerAreaLeft)
+      const overlapRight = Math.min(cardRight, centerAreaRight)
+      const overlap = Math.max(0, overlapRight - overlapLeft)
+      const overlapScore = overlap / card.offsetWidth
+
+      if (overlapScore > bestScore && overlapScore > 0.6) {
+        bestScore = overlapScore
+        bestCard = card
+      }
+    })
+
+    if (bestCard && bestCard.dataset.date !== this.currentDateValue) {
+      this.currentDateValue = bestCard.dataset.date
+      this.updateSelectedDate(bestCard)
+      this.loadEntryForDate()
+      this.updateFormDate(bestCard.dataset.date)
+      this.updateControllerDates(bestCard.dataset.date)
+    }
+  }
+
+  updateControllerDates(date) {
+  // Update the audio controller's entry date
+    const audioController = this.application.getControllerForElementAndIdentifier(this.element, 'audio')
+    if (audioController) {
+      audioController.entryDateValue = date
+    }
+
+    // Update the camera controller's entry date
+    const cameraElement = document.querySelector('[data-controller*="camera"]')
+    const cameraController = cameraElement ? this.application.getControllerForElementAndIdentifier(cameraElement, 'camera') : null
+    if (cameraController) {
+      cameraController.entryDateValue = date
+    }
+  }
+
   // NEW METHOD - Handle clicking on calendar dates
   loadDateContent(event) {
     const date = event.currentTarget.dataset.date
@@ -32,14 +147,15 @@ export default class extends Controller {
       audioController.entryDateValue = date
     }
 
-    // NEW: Update the camera controller's entry date (fixed search)
+    // Update the camera controller's entry date (fixed search)
     const cameraElement = document.querySelector('[data-controller*="camera"]')
     const cameraController = cameraElement ? this.application.getControllerForElementAndIdentifier(cameraElement, 'camera') : null
     if (cameraController) {
       cameraController.entryDateValue = date
-    } else {
-      console.log("DEBUG: Camera controller not found")
     }
+
+    // Center the clicked date
+    this.centerOnDate(date)
   }
 
   // NEW METHOD - Visual feedback for selected date
@@ -115,6 +231,8 @@ export default class extends Controller {
 
   // Update entry content in the display
   updateEntryContent(entry) {
+    console.log('Entry data:', entry);
+    
     const titleElement = this.entryDisplayTarget.querySelector('.entry-title')
     const nutshellElement = this.entryDisplayTarget.querySelector('.entry-nutshell')
     const summaryElement = this.entryDisplayTarget.querySelector('.entry-summary')
@@ -124,6 +242,16 @@ export default class extends Controller {
     if (titleElement) titleElement.textContent = entry.title || 'Untitled Entry'
     if (nutshellElement) nutshellElement.textContent = entry.ai_nutshell || ''
     if (summaryElement) summaryElement.textContent = entry.ai_summary || ''
+
+    // Banner display here:
+    const bannerElement = this.entryDisplayTarget.querySelector('.entry-banner')
+    if (bannerElement && entry.ai_banner_image_url) {
+      bannerElement.innerHTML = `<img src="${entry.ai_banner_image_url}" alt="Mood banner" class="banner-image">`
+      bannerElement.style.display = 'block'
+    } else if (bannerElement) {
+      bannerElement.innerHTML = '<button class="regenerate-banner-btn">Generate Banner</button>'
+      bannerElement.style.display = 'block'
+    }
 
     // Handle mood display
     if (moodElement && entry.ai_mood_label) {

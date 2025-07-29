@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_24_095036) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_29_063514) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_24_095036) do
     t.text "ai_background_style"
     t.text "ai_summary"
     t.text "ai_nutshell"
+    t.string "ai_banner_image_url"
     t.index ["entry_date"], name: "index_journal_entries_on_entry_date"
     t.index ["input_type"], name: "index_journal_entries_on_input_type"
     t.index ["user_id", "entry_date"], name: "index_journal_entries_on_user_and_date"

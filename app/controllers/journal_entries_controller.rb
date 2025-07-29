@@ -1,42 +1,30 @@
 class JournalEntriesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_journal_entry, only: [:show, :edit, :update, :destroy]
+  before_action :set_journal_entry, only: [:show, :edit, :update, :destroy, :regenerate_banner]
 
   def index
     @journal_entries = current_user.journal_entries.order(entry_date: :desc)
   end
 
   def show
-    # Handle both direct show requests and date-based lookups
-    if params[:date].present?
-      @entry = current_user.journal_entries.find_by(entry_date: params[:date])
-
-      respond_to do |format|
-        format.json do
-          if @entry
-            render json: {
-              entry: {
-                id: @entry.id,
-                title: @entry.title,
-                content: @entry.content,
-                ai_mood_label: @entry.ai_mood_label,
-                ai_summary: @entry.ai_summary,
-                ai_nutshell: @entry.ai_nutshell,
-                input_type: @entry.input_type,
-                entry_date: @entry.entry_date,
-                media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
-              }
-            }
-          else
-            render json: { entry: nil }
-          end
-        end
-      end
-    else
-      # Regular show action for specific entry
-      respond_to do |format|
-        format.html
-        format.json { render json: @journal_entry }
+    respond_to do |format|
+      format.html # For direct URL access like /journal_entries/123
+      format.json do
+        render json: {
+          entry: {
+            id: @journal_entry.id,
+            title: @journal_entry.title,
+            content: @journal_entry.content,
+            ai_mood_label: @journal_entry.ai_mood_label,
+            ai_summary: @journal_entry.ai_summary,
+            ai_nutshell: @journal_entry.ai_nutshell,
+            ai_banner_image_url: @journal_entry.ai_banner_image_url,
+            input_type: @journal_entry.input_type,
+            entry_date: @journal_entry.entry_date,
+            formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
+            media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil
+          }
+        }
       end
     end
   end
@@ -55,6 +43,7 @@ class JournalEntriesController < ApplicationController
               ai_mood_label: @entry.ai_mood_label,
               ai_summary: @entry.ai_summary,
               ai_nutshell: @entry.ai_nutshell,
+              ai_banner_image_url: @entry.ai_banner_image_url,  # This line should be here
               input_type: @entry.input_type,
               entry_date: @entry.entry_date,
               media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
@@ -84,6 +73,13 @@ class JournalEntriesController < ApplicationController
         if should_process_with_ai?
           begin
             process_with_ai(@journal_entry)
+
+            # Generate banner image with logging
+            Rails.logger.info "=== Starting banner generation for entry #{@journal_entry.id}"
+            banner_url = BannerImageService.generate_for_entry(@journal_entry)
+            Rails.logger.info "=== Banner result: #{banner_url}"
+            @journal_entry.update(ai_banner_image_url: banner_url) if banner_url
+
           rescue => e
             Rails.logger.error "AI processing failed: #{e.message}"
             # Continue without AI analysis if it fails
@@ -106,7 +102,8 @@ class JournalEntriesController < ApplicationController
               input_type: @journal_entry.input_type,
               entry_date: @journal_entry.entry_date,
               formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
-              media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil
+              media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil,
+              ai_banner_image_url: @journal_entry.ai_banner_image_url  # Add this line too
             }
           }
         end
@@ -114,6 +111,15 @@ class JournalEntriesController < ApplicationController
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: { success: false, errors: @journal_entry.errors.full_messages } }
       end
+    end
+  end
+
+  def regenerate_banner
+    banner_url = BannerImageService.generate_for_entry(@journal_entry)
+    @journal_entry.update(ai_banner_image_url: banner_url) if banner_url
+
+    respond_to do |format|
+      format.json { render json: { banner_url: @journal_entry.ai_banner_image_url } }
     end
   end
 
