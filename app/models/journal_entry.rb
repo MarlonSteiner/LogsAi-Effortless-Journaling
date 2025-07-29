@@ -1,6 +1,6 @@
 class JournalEntry < ApplicationRecord
   # Associations
-  belongs_to :user
+  belongs_to :user, dependent: :destroy
   has_many :entry_tags, dependent: :destroy
   has_many :moods, through: :entry_tags
 
