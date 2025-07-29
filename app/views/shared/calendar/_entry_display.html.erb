@@ -8,6 +8,13 @@
     <div class="entry-content">
       <h1 class="entry-title"><%= entry.title %></h1>
 
+      <!-- Add banner section here -->
+      <% if entry.ai_banner_image_url.present? %>
+        <div class="entry-banner">
+          <img src="<%= entry.ai_banner_image_url %>" alt="Mood banner" class="banner-image">
+        </div>
+      <% end %>
+
       <% if entry.ai_nutshell.present? %>
         <div class="nutshell-section">
           <h3 class="section-label">IN A NUTSHELL</h3>

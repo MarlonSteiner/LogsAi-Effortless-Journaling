@@ -12,6 +12,9 @@ Rails.application.routes.draw do
     collection do
       get 'for_date/:date', to: 'journal_entries#show_for_date', as: 'for_date'
     end
+    member do
+      patch :regenerate_banner
+    end
   end
 
   # Dashboard
