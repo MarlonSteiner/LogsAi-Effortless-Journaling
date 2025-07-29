@@ -8,11 +8,11 @@ puts "🌱 Starting seed process..."
 if Rails.env.development? || Rails.env.test? || ENV['FORCE_SEED_RESET'] == 'true'
   puts "🧹 Cleaning database (safe order)..."
   # Order matters for foreign key constraints
-  EntryTag.destroy_all
-  JournalEntry.destroy_all
-  MoodSummary.destroy_all
-  Mood.destroy_all
-  User.destroy_all
+  EntryTag.delete_all
+  JournalEntry.delete_all
+  MoodSummary.delete_all
+  Mood.delete_all
+  User.delete_all
 else
   puts "🔒 Production mode - skipping data cleanup (use FORCE_SEED_RESET=true to override)"
 end
