@@ -3,7 +3,7 @@
     <div class="date-card border rounded-4 px-3 text-center cursor-pointer"
           data-action="click->dashboard#loadDateContent"
           data-date="<%= date.to_s %>"
-          data-dashboard-current-class="bg-primary text-white">
+          data-dashboard-target="dateCard">
       <% if date == @current_date %>
         <small>TODAY</small>
       <% end %>

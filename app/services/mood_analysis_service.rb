@@ -67,28 +67,19 @@ class MoodAnalysisService
   end
 
   def parse_response(response_text)
-    # Try to extract JSON from the response
-    json_match = response_text.match(/\{.*\}/m)
+    parsed = JSON.parse(response_text)
 
-    if json_match
-      parsed = JSON.parse(json_match[0])
-
-      # Validate and sanitize the response
-      {
-        title: sanitize_title(parsed['title']),
-        mood: validate_mood(parsed['mood']),
-        color_theme: sanitize_color(parsed['color_theme']),
-        background_style: sanitize_text(parsed['background_style']),
-        summary: sanitize_text(parsed['summary']),
-        nutshell: sanitize_text(parsed['nutshell'])
-      }
-    else
-      # If we can't parse JSON, extract information manually
-      extract_from_text(response_text)
-    end
+    {
+      title: sanitize_title(parsed['title']),
+      mood: validate_mood(parsed['mood']),
+      color_theme: sanitize_color(parsed['color_theme']),
+      background_style: sanitize_text(parsed['background_style']),
+      summary: sanitize_text(parsed['summary']),
+      nutshell: sanitize_text(parsed['nutshell'])
+    }
   rescue JSON::ParserError => e
     Rails.logger.error "JSON parsing error: #{e.message}"
-    extract_from_text(response_text)
+    fallback_response
   end
 
   def extract_from_text(text)

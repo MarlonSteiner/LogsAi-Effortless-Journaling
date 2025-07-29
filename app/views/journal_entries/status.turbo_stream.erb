@@ -1,0 +1,19 @@
+<%= turbo_stream.replace "entry-title" do %>
+  <%= @journal_entry.title %>
+<% end %>
+
+<%= turbo_stream.replace "entry-nutshell" do %>
+  <%= @journal_entry.ai_nutshell %>
+<% end %>
+
+<%= turbo_stream.replace "entry-summary" do %>
+  <%= @journal_entry.ai_summary %>
+<% end %>
+
+<%= turbo_stream.replace "entry-banner" do %>
+  <% if @journal_entry.ai_banner_image_url.present? %>
+    <img src="<%= @journal_entry.ai_banner_image_url %>" class="banner-image" />
+  <% else %>
+    <button class="regenerate-banner-btn">Generate Banner</button>
+  <% end %>
+<% end %>

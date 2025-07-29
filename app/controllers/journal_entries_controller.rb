@@ -43,7 +43,7 @@ class JournalEntriesController < ApplicationController
               ai_mood_label: @entry.ai_mood_label,
               ai_summary: @entry.ai_summary,
               ai_nutshell: @entry.ai_nutshell,
-              ai_banner_image_url: @entry.ai_banner_image_url,  # This line should be here
+              ai_banner_image_url: @entry.ai_banner_image_url,
               input_type: @entry.input_type,
               entry_date: @entry.entry_date,
               media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
@@ -69,21 +69,9 @@ class JournalEntriesController < ApplicationController
 
     respond_to do |format|
       if @journal_entry.save
-        # Process with AI if media file is attached or content is present
+        # Queue background job
         if should_process_with_ai?
-          begin
-            process_with_ai(@journal_entry)
-
-            # Generate banner image with logging
-            Rails.logger.info "=== Starting banner generation for entry #{@journal_entry.id}"
-            banner_url = BannerImageService.generate_for_entry(@journal_entry)
-            Rails.logger.info "=== Banner result: #{banner_url}"
-            @journal_entry.update(ai_banner_image_url: banner_url) if banner_url
-
-          rescue => e
-            Rails.logger.error "AI processing failed: #{e.message}"
-            # Continue without AI analysis if it fails
-          end
+          ProcessEntryAiJob.perform_later(@journal_entry.id)
         end
 
         format.html { redirect_to root_path, notice: 'Journal entry was successfully created.' }
@@ -103,7 +91,7 @@ class JournalEntriesController < ApplicationController
               entry_date: @journal_entry.entry_date,
               formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
               media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil,
-              ai_banner_image_url: @journal_entry.ai_banner_image_url  # Add this line too
+              ai_banner_image_url: @journal_entry.ai_banner_image_url
             }
           }
         end
@@ -135,6 +123,19 @@ class JournalEntriesController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: { error: @journal_entry.errors.full_messages.join(', ') } }
       end
+    end
+  end
+
+  def status
+    @journal_entry = JournalEntry.find(params[:id])
+
+    # Skip if AI data not yet ready
+    unless @journal_entry.ai_summary.present? && @journal_entry.ai_nutshell.present?
+      head :no_content and return
+    end
+
+    respond_to do |format|
+      format.turbo_stream
     end
   end
 
@@ -178,119 +179,6 @@ class JournalEntriesController < ApplicationController
       'bad'
     else
       'neutral'
-    end
-  end
-
-  def process_with_ai(entry)
-    case entry.input_type
-    when 'audio'
-      process_audio_entry(entry)
-    when 'image', 'video'
-      process_media_entry(entry)
-    when 'text'
-      process_text_entry(entry)
-    end
-  end
-
-  def process_audio_entry(entry)
-    Rails.logger.info "=== AUDIO PROCESSING STARTED ==="
-    return unless entry.media_file.attached?
-
-    # For audio entries, we'll use OpenAI's Whisper API to transcribe
-    # and then analyze the transcription
-    begin
-      # Get audio transcription
-      transcription = get_audio_transcription(entry.media_file)
-
-      if transcription.present?
-        # Set the transcription as content
-        entry.update_column(:content, transcription)
-
-        # Analyze the transcribed content
-        analysis = MoodAnalysisService.analyze(transcription, 'audio')
-
-        # Update entry with AI analysis
-        entry.update_columns(
-          title: analysis[:title],
-          ai_mood_label: analysis[:mood],
-          ai_color_theme: analysis[:color_theme],
-          ai_background_style: analysis[:background_style],
-          ai_summary: analysis[:summary],
-          ai_nutshell: analysis[:nutshell]
-        )
-      end
-    rescue => e
-      Rails.logger.error "Audio processing failed: #{e.message}"
-      # Set a default title if AI processing fails
-      entry.update_column(:title, "Voice Recording - #{entry.entry_date.strftime('%B %d, %Y')}")
-    end
-  end
-
-  def process_media_entry(entry)
-    return unless entry.media_file.attached?
-
-    begin
-      # For image/video, analyze the media file directly
-      analysis = MoodAnalysisService.analyze(entry.media_file, entry.input_type)
-
-      entry.update_columns(
-        title: analysis[:title],
-        ai_mood_label: analysis[:mood],
-        ai_color_theme: analysis[:color_theme],
-        ai_background_style: analysis[:background_style],
-        ai_summary: analysis[:summary],
-        ai_nutshell: analysis[:nutshell]
-      )
-    rescue => e
-      Rails.logger.error "Media processing failed: #{e.message}"
-      # Set a default title if AI processing fails
-      entry.update_column(:title, "#{entry.input_type.capitalize} Entry - #{entry.entry_date.strftime('%B %d, %Y')}")
-    end
-  end
-
-  def process_text_entry(entry)
-    return unless entry.content.present?
-
-    begin
-      analysis = MoodAnalysisService.analyze(entry.content, 'text')
-
-      entry.update_columns(
-        title: analysis[:title],
-        ai_mood_label: analysis[:mood],
-        ai_color_theme: analysis[:color_theme],
-        ai_background_style: analysis[:background_style],
-        ai_summary: analysis[:summary],
-        ai_nutshell: analysis[:nutshell]
-      )
-    rescue => e
-      Rails.logger.error "Text processing failed: #{e.message}"
-      # Set a default title if AI processing fails
-      entry.update_column(:title, "Journal Entry - #{entry.entry_date.strftime('%B %d, %Y')}")
-    end
-  end
-
-  def get_audio_transcription(audio_file)
-    client = OpenAI::Client.new(access_token: ENV['OPENAI_ACCESS_TOKEN'])
-
-    file_extension = audio_file.content_type.include?('webm') ? '.webm' : '.mp4'
-
-    temp_file = Tempfile.new(['audio', file_extension])
-    temp_file.binmode
-    temp_file.write(audio_file.download)
-    temp_file.rewind
-
-    begin
-      response = client.audio.transcribe(
-        parameters: {
-          model: "whisper-1",
-          file: File.open(temp_file.path, "rb")
-        }
-      )
-
-      response["text"]
-    ensure
-      temp_file.close
-      temp_file.unlink
     end
   end
 end

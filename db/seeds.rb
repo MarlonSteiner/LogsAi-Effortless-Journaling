@@ -53,13 +53,6 @@ sample_entries = [
     moods: ["reflective", "grateful"]
   },
   {
-    title: "Voice Note from Park",
-    content: "Recorded some thoughts while walking in the park. Nature always helps me think clearly.",
-    input_type: "speech",
-    entry_date: Date.current - 2.days,
-    moods: ["peaceful", "calm", "grateful"]
-  },
-  {
     title: "Quick Check-in",
     content: "Just a quick note about my day. Nothing special, but wanted to maintain the habit.",
     input_type: "text",

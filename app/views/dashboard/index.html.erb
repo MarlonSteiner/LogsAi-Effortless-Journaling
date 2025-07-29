@@ -1,11 +1,12 @@
 <div class="dashboard-container"
-    data-controller="dashboard audio"
-    data-dashboard-current-date-value="<%= @selected_date %>"
-    data-dashboard-show-url-value="<%= for_date_journal_entries_path('DATE_PLACEHOLDER') %>"
-    data-audio-entry-date-value="<%= @selected_date %>"
-    data-audio-create-url-value="<%= journal_entries_path %>"
-    data-dashboard-create-url-value="<%= journal_entries_path %>"
-    data-action="entryCreated@window->dashboard#entryCreated">
+  data-controller="dashboard audio entry-subscription"
+  data-dashboard-current-date-value="<%= @selected_date %>"
+  data-dashboard-show-url-value="<%= for_date_journal_entries_path('DATE_PLACEHOLDER') %>"
+  data-audio-entry-date-value="<%= @selected_date %>"
+  data-audio-create-url-value="<%= journal_entries_path %>"
+  data-dashboard-create-url-value="<%= journal_entries_path %>"
+  data-entry-subscription-entry-id-value="<%= @journal_entry&.id || 0 %>"
+  data-action="entryCreated@window->dashboard#entryCreated">
 
       <!-- CALENDAR SECTION HERE -->
   <div class="calendar-section" data-dashboard-target="calendarSection">
@@ -82,19 +83,20 @@
     </div>
 
     <div class="entry-content">
-      <h1 class="entry-title"></h1>
+        <h1 class="entry-title" id="entry-title"></h1>
 
-      <!-- Banner container - added after summary -->
-      <div class="entry-banner" style="display: none;"></div>
-      
-      <div class="nutshell-section">
-        <h3 class="section-label">IN A NUTSHELL</h3>
-        <p class="entry-nutshell"></p>
-      </div>
+        <!-- Banner container - add ID -->
+        <div class="entry-banner" id="entry-banner" style="display: none;"></div>
 
-      <div class="summary-section">
-        <h3 class="section-label">FULL SUMMARY</h3>
-        <p class="entry-summary"></p>
+        <div class="nutshell-section">
+          <h3 class="section-label">IN A NUTSHELL</h3>
+          <p class="entry-nutshell" id="entry-nutshell"></p>
+        </div>
+
+        <div class="summary-section">
+          <h3 class="section-label">FULL SUMMARY</h3>
+          <p class="entry-summary" id="entry-summary"></p>
+        </div>
       </div>
 
 
