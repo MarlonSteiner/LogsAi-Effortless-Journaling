@@ -63,11 +63,13 @@
 #sidebarSearchInput {
   padding: 15px 20px 15px 45px;
   border: none;
-  border-radius: 50px;
+  border-radius: 1rem;
   font-size: 16px;
   background: rgba(138, 101, 224, 0.3);
   color: white;
   transition: all 0.3s ease;
+  outline: none;        // remove default outline
+  box-shadow: none;
 
   /* new: draw the search icon */
   background-color: rgba(138, 101, 224, 0.3);
@@ -77,6 +79,11 @@
   background-repeat: no-repeat;
   background-position: 15px center;  // 15px from left, vertically centered
   background-size: 20px 20px;
+
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .cancel-btn {
