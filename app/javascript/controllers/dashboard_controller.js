@@ -6,7 +6,8 @@ export default class extends Controller {
   static values = {
     currentDate: String,
     createUrl: String,
-    showUrl: String
+    showUrl: String,
+    editingEntryId: Number
   }
 
   connect() {
@@ -40,6 +41,7 @@ export default class extends Controller {
     }
   }
 
+  // REMOVED DUPLICATE - kept only this version
   setupScrollDetection() {
     if (this.hasCalendarContainerTarget) {
       let scrollTimeout
@@ -47,7 +49,7 @@ export default class extends Controller {
         clearTimeout(scrollTimeout)
         scrollTimeout = setTimeout(() => {
           this.updateSelectionFromScroll()
-        }, 10) // Very fast response
+        }, 50) // Fast response
       })
     }
   }
@@ -59,18 +61,6 @@ export default class extends Controller {
     )
     if (targetCard) {
       this.updateSelectedDate(targetCard)
-    }
-  }
-
-  setupScrollDetection() {
-    if (this.hasCalendarContainerTarget) {
-      let scrollTimeout
-      this.calendarContainerTarget.addEventListener('scroll', () => {
-        clearTimeout(scrollTimeout)
-        scrollTimeout = setTimeout(() => {
-          this.updateSelectionFromScroll()
-        }, 50) // Fast response
-      })
     }
   }
 
@@ -211,6 +201,45 @@ export default class extends Controller {
     }
   }
 
+  // ADD these methods to your dashboard_controller.js:
+  showTextLoading() {
+    const loading = document.createElement('div')
+    loading.id = 'text-loading'
+    loading.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #1a1a1a;
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        z-index: 1001;
+        text-align: center;
+      ">
+        <div class="spinner" style="
+          width: 40px;
+          height: 40px;
+          border: 4px solid #333;
+          border-top: 4px solid #7c3aed;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        "></div>
+        <div>Processing with AI...</div>
+      </div>
+    `
+    document.body.appendChild(loading)
+  }
+
+  hideTextLoading() {
+    const loading = document.getElementById('text-loading')
+    if (loading) {
+      loading.remove()
+    }
+  }
+
   // Show recording interface (no entry exists)
   showRecordingInterface() {
     this.recordingInterfaceTarget.style.display = 'block'
@@ -229,7 +258,6 @@ export default class extends Controller {
     this.updateEntryContent(entry)
   }
 
-  // Update entry content in the display
   updateEntryContent(entry) {
     const titleElement = this.entryDisplayTarget.querySelector('.entry-title')
     const nutshellElement = this.entryDisplayTarget.querySelector('.entry-nutshell')
@@ -241,7 +269,44 @@ export default class extends Controller {
     if (nutshellElement) nutshellElement.textContent = entry.ai_nutshell || ''
     if (summaryElement) summaryElement.textContent = entry.ai_summary || ''
 
-    // Banner display here:
+    // CREATE AND SHOW ENTRY ACTIONS MENU WITH DELETE MODAL
+    const actionsContainer = this.entryDisplayTarget.querySelector('#entry-actions-container')
+    if (actionsContainer) {
+      actionsContainer.innerHTML = `
+        <div class="entry-actions-menu" data-controller="entry-actions" data-entry-actions-entry-id-value="${entry.id}">
+          <!-- Three dots button (initial state) -->
+          <button class="three-dots-btn" data-action="click->entry-actions#showActions" data-entry-actions-target="dotsBtn">
+            <i class="fas fa-ellipsis-h"></i>
+          </button>
+
+          <!-- Action buttons (hidden initially) -->
+          <div class="action-buttons" data-entry-actions-target="actionButtons" style="display: none;">
+            <button class="edit-btn" data-action="click->entry-actions#editEntry" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete-btn" data-action="click->entry-actions#confirmDelete" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+
+          <!-- Delete confirmation modal - MUST BE INSIDE THE CONTROLLER SCOPE -->
+          <div class="delete-modal" data-entry-actions-target="deleteModal" style="display: none;">
+            <div class="modal-overlay" data-action="click->entry-actions#cancelDelete"></div>
+            <div class="modal-content">
+              <h3>Delete Entry?</h3>
+              <p>This action cannot be undone.</p>
+              <div class="modal-actions">
+                <button class="cancel-btn" data-action="click->entry-actions#cancelDelete">Cancel</button>
+                <button class="confirm-delete-btn" data-action="click->entry-actions#deleteEntry">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+      actionsContainer.style.display = 'block'
+    }
+
+    // Rest of your existing code...
     const bannerElement = this.entryDisplayTarget.querySelector('.entry-banner')
     if (bannerElement && entry.ai_banner_image_url) {
       bannerElement.innerHTML = `<img src="${entry.ai_banner_image_url}" alt="Mood banner" class="banner-image">`
@@ -251,13 +316,11 @@ export default class extends Controller {
       bannerElement.style.display = 'block'
     }
 
-    // Handle mood display
     if (moodElement && entry.ai_mood_label) {
       moodElement.textContent = entry.ai_mood_label
       moodElement.className = `entry-mood mood-${entry.ai_mood_label.toLowerCase().replace(/\s+/g, '-')}`
     }
 
-    // Handle media display
     if (mediaElement && entry.media_url) {
       this.displayMedia(mediaElement, entry)
     }
@@ -309,15 +372,27 @@ export default class extends Controller {
     this.calendarSectionTarget.style.display = 'none' // Hide calendar in text form
   }
 
-  // Submit text entry (UPDATED for Ajax calendar integration)
   async submitTextEntry(event) {
     event.preventDefault()
 
     const formData = new FormData(event.target)
 
+    const isUpdate = this.editingEntryIdValue !== null && this.editingEntryIdValue !== undefined
+    console.log('=== TEXT ENTRY DEBUG ===')
+    console.log('Is Update:', isUpdate)
+
+    const url = isUpdate ? `/journal_entries/${this.editingEntryIdValue}` : this.createUrlValue
+    const method = isUpdate ? 'PATCH' : 'POST'
+
     try {
-      const response = await fetch(this.createUrlValue, {
-        method: 'POST',
+      // Show spinner for new entries only (not for edits)
+      if (!isUpdate) {
+        console.log('Showing text loading spinner...')
+        this.showTextLoading()
+      }
+
+      const response = await fetch(url, {
+        method: method,
         body: formData,
         headers: {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
@@ -326,28 +401,45 @@ export default class extends Controller {
         }
       })
 
-      if (!response.ok) throw new Error('Failed to create entry')
+      if (!response.ok) throw new Error('Failed to save entry')
 
       const result = await response.json()
 
       if (result.success) {
-        // Trigger custom event for calendar to listen
-        window.dispatchEvent(new CustomEvent('entryCreated', {
-          detail: result.entry
-        }))
-
-        // Update the main dashboard
-        this.showEntryDisplay(result.entry)
+        // Reset editing state
+        this.editingEntryIdValue = null
 
         // Reset form
+        const form = event.target
+        form.action = this.createUrlValue
+        const methodField = form.querySelector('input[name="_method"]')
+        if (methodField) methodField.remove()
+
+        const submitBtn = form.querySelector('button[type="submit"]')
+        if (submitBtn) {
+          submitBtn.textContent = 'Create Entry'
+        }
+
         event.target.reset()
+        this.showEntryDisplay(result.entry)
+
+        if (!isUpdate) {
+          window.dispatchEvent(new CustomEvent('entryCreated', {
+            detail: result.entry
+          }))
+        }
       } else {
-        console.error('Text entry creation failed:', result.errors)
-        alert('Failed to create entry')
+        console.error('Entry save failed:', result.errors)
+        alert('Failed to save entry')
       }
     } catch (error) {
-      console.error('Error creating text entry:', error)
-      alert('Failed to create entry')
+      console.error('Error saving entry:', error)
+      alert('Failed to save entry')
+    } finally {
+      if (!isUpdate) {
+        console.log('Hiding text loading spinner...')
+        this.hideTextLoading()
+      }
     }
   }
 
@@ -393,5 +485,79 @@ export default class extends Controller {
       console.error('Error deleting entry:', error)
       alert('An error occurred. Please try again.')
     }
+  }
+
+  // Method for switching to edit mode from entry actions
+  switchToEditMode(entryData) {
+    // Store entry ID for updating
+    this.editingEntryIdValue = entryData.id
+
+    // Pre-fill form with entry data
+    const titleInput = this.textEntryFormTarget.querySelector('input[name="journal_entry[title]"]')
+    const contentInput = this.textEntryFormTarget.querySelector('textarea[name="journal_entry[content]"]')
+    const form = this.textEntryFormTarget.querySelector('form')
+
+    if (titleInput) titleInput.value = entryData.title || ''
+    if (contentInput) contentInput.value = entryData.content || ''
+
+    // Update form action for PATCH request
+    if (form) {
+      form.action = `/journal_entries/${entryData.id}`
+
+      // Add hidden method field for PATCH
+      let methodField = form.querySelector('input[name="_method"]')
+      if (!methodField) {
+        methodField = document.createElement('input')
+        methodField.type = 'hidden'
+        methodField.name = '_method'
+        form.appendChild(methodField)
+      }
+      methodField.value = 'PATCH'
+    }
+
+    // Switch to text form state
+    this.showTextForm()
+
+    // Update submit button text
+    const submitBtn = this.textEntryFormTarget.querySelector('button[type="submit"]')
+    if (submitBtn) {
+      submitBtn.textContent = 'Update Entry'
+    }
+  }
+
+  // Method for switching back to recording after delete
+  switchToRecordingInterface() {
+    // Reset any editing state
+    this.editingEntryIdValue = null
+
+    // Reset form action and method
+    const form = this.textEntryFormTarget.querySelector('form')
+    if (form) {
+      form.action = this.createUrlValue
+
+      // Remove method field
+      const methodField = form.querySelector('input[name="_method"]')
+      if (methodField) methodField.remove()
+    }
+
+    // Reset submit button text
+    const submitBtn = this.textEntryFormTarget.querySelector('button[type="submit"]')
+    if (submitBtn) {
+      submitBtn.textContent = 'Create Entry'
+    }
+
+    // Clear form fields
+    const titleInput = this.textEntryFormTarget.querySelector('input[name="journal_entry[title]"]')
+    const contentInput = this.textEntryFormTarget.querySelector('textarea[name="journal_entry[content]"]')
+    if (titleInput) titleInput.value = ''
+    if (contentInput) contentInput.value = ''
+
+    // Switch to recording interface state
+    this.showRecordingInterface()
+  }
+
+  // Helper method to get selected date (used by entry actions)
+  getSelectedDate() {
+    return this.currentDateValue
   }
 }

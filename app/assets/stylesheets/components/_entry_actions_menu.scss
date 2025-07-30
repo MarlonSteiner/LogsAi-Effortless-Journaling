@@ -1,0 +1,196 @@
+.entry-actions-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto; // Push to right side
+
+  .three-dots-btn,
+  .action-buttons button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+
+    .edit-btn {
+      color: rgba(255, 255, 255, 0.8);
+
+      &:hover {
+        color: #4CAF50;
+        background: rgba(76, 175, 80, 0.1);
+      }
+    }
+
+    .delete-btn {
+      color: rgba(255, 255, 255, 0.8);
+
+      &:hover {
+        color: #f44336;
+        background: rgba(244, 67, 54, 0.1);
+      }
+    }
+  }
+}
+
+// Delete confirmation modal
+.delete-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+
+  .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: #2D2B3A;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 0 20px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+
+    h3 {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin: 0 0 20px 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+
+      button {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.cancel-btn {
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+          }
+        }
+
+        &.confirm-delete-btn {
+          background: #f44336;
+          color: white;
+
+          &:hover {
+            background: #d32f2f;
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Integration with entry headers
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  .entry-title {
+    flex: 1;
+    margin-right: 12px;
+  }
+
+  .entry-actions-menu {
+    flex-shrink: 0;
+  }
+}
+
+.title-with-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .entry-title {
+    flex: 1;
+    margin: 0;
+    margin-right: 12px;
+  }
+
+  .entry-actions-container {
+    flex-shrink: 0;
+    margin-top: 4px; // Slight adjustment to align with title
+  }
+}

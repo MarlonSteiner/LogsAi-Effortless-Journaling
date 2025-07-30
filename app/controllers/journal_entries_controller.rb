@@ -63,15 +63,14 @@ class JournalEntriesController < ApplicationController
 
   def create
     @journal_entry = current_user.journal_entries.build(journal_entry_params)
-
-    # Set entry date
     @journal_entry.entry_date = params[:journal_entry][:entry_date] || Date.current
 
     respond_to do |format|
       if @journal_entry.save
-        # Queue background job
+        # Process AI synchronously - WAIT for completion before responding
         if should_process_with_ai?
-          ProcessEntryAiJob.perform_later(@journal_entry.id)
+          ProcessEntryAiJob.perform_now(@journal_entry.id)
+          @journal_entry.reload  # Get the updated AI fields from database
         end
 
         format.html { redirect_to root_path, notice: 'Journal entry was successfully created.' }
@@ -112,17 +111,64 @@ class JournalEntriesController < ApplicationController
   end
 
   def edit
+    @entry = current_user.journal_entries.find(params[:id])
+
+    respond_to do |format|
+      format.json {
+        render json: {
+          success: true,
+          entry: {
+            id: @entry.id,
+            title: @entry.title,                    # AI-generated title
+            content: @entry.ai_summary,             # CHANGED: Send AI summary instead of original content
+            entry_date: @entry.entry_date.strftime('%Y-%m-%d')
+          }
+        }
+      }
+    end
+  rescue ActiveRecord::RecordNotFound
+    respond_to do |format|
+      format.json { render json: { success: false, error: 'Entry not found' } }
+    end
   end
 
   def update
-    respond_to do |format|
-      if @journal_entry.update(journal_entry_params)
-        format.html { redirect_to @journal_entry, notice: 'Journal entry was successfully updated.' }
-        format.json { render json: @journal_entry }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: { error: @journal_entry.errors.full_messages.join(', ') } }
+    @entry = current_user.journal_entries.find(params[:id])
+
+    # Update the display fields with user's edits
+    update_params = {}
+    update_params[:title] = params[:journal_entry][:title] if params[:journal_entry][:title].present?
+    update_params[:ai_summary] = params[:journal_entry][:content] if params[:journal_entry][:content].present?
+
+    if @entry.update(update_params)
+      respond_to do |format|
+        format.json {
+          render json: {
+            success: true,
+            entry: {
+              id: @entry.id,
+              title: @entry.title,                    # Updated title
+              content: @entry.ai_summary,             # Updated summary (what user edited)
+              ai_mood_label: @entry.ai_mood_label,
+              ai_summary: @entry.ai_summary,          # This now contains user's edited text
+              ai_nutshell: @entry.ai_nutshell,
+              ai_banner_image_url: @entry.ai_banner_image_url,
+              input_type: @entry.input_type,
+              entry_date: @entry.entry_date.strftime('%Y-%m-%d'),
+              formatted_date: @entry.entry_date.strftime("%B %d, %Y"),
+              media_url: @entry.media_file.attached? ? url_for(@entry.media_file) : nil
+            }
+          }
+        }
       end
+    else
+      respond_to do |format|
+        format.json { render json: { success: false, errors: @entry.errors } }
+      end
+    end
+  rescue ActiveRecord::RecordNotFound
+    respond_to do |format|
+      format.json { render json: { success: false, error: 'Entry not found' } }
     end
   end
 
@@ -140,14 +186,23 @@ class JournalEntriesController < ApplicationController
   end
 
   def destroy
-    @journal_entry.destroy
+    @entry = current_user.journal_entries.find(params[:id])
+    @entry.destroy
+
     respond_to do |format|
-      format.html { redirect_to root_path, notice: 'Journal entry was successfully deleted.' }
-      format.json { head :no_content }
+      format.json { render json: { success: true } }
     end
-  end
+  rescue ActiveRecord::RecordNotFound
+    respond_to do |format|
+      format.json { render json: { success: false, error: 'Entry not found' } }
+    end
+end
 
   private
+
+  def entry_params
+    params.require(:journal_entry).permit(:title, :content, :entry_date, :input_type)
+  end
 
   def set_journal_entry
     @journal_entry = current_user.journal_entries.find(params[:id])

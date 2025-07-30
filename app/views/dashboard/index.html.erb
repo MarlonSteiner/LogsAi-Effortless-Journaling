@@ -82,8 +82,14 @@
       </div>
     </div>
 
-    <div class="entry-content">
-        <h1 class="entry-title" id="entry-title"></h1>
+      <div class="entry-content">
+        <!-- UPDATED: Add the entry actions menu next to the title -->
+        <div class="title-with-actions">
+          <h1 class="entry-title" id="entry-title"></h1>
+          <div class="entry-actions-container" id="entry-actions-container" style="display: none;">
+            <!-- This will be populated by JavaScript when entry loads -->
+          </div>
+        </div>
 
         <!-- Banner container - add ID -->
         <div class="entry-banner" id="entry-banner" style="display: none;"></div>
@@ -98,8 +104,5 @@
           <p class="entry-summary" id="entry-summary"></p>
         </div>
       </div>
-
-
-    </div>
   </div>
 </div>

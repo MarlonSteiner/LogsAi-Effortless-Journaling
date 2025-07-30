@@ -20,6 +20,11 @@ Rails.application.routes.draw do
     member do
       get :status
     end
+    member do
+      get :edit    # For JSON response to get entry data
+      patch :update # For updating entries
+      delete :destroy # For deleting entries
+    end
   end
 
   # config/routes.rb

@@ -66,8 +66,20 @@ class MoodAnalysisService
     end
   end
 
+  # REPLACE your parse_response method in MoodAnalysisService with this:
   def parse_response(response_text)
-    parsed = JSON.parse(response_text)
+    # Clean up the response text - remove code block markers
+    cleaned_response = response_text.strip
+
+    # Remove ```json and ``` if present
+    if cleaned_response.start_with?('```json')
+      cleaned_response = cleaned_response.gsub(/^```json\s*/, '').gsub(/\s*```$/, '')
+    elsif cleaned_response.start_with?('```')
+      cleaned_response = cleaned_response.gsub(/^```\s*/, '').gsub(/\s*```$/, '')
+    end
+
+    # Try to parse as JSON
+    parsed = JSON.parse(cleaned_response)
 
     {
       title: sanitize_title(parsed['title']),
@@ -79,7 +91,11 @@ class MoodAnalysisService
     }
   rescue JSON::ParserError => e
     Rails.logger.error "JSON parsing error: #{e.message}"
-    fallback_response
+    Rails.logger.error "Raw response: #{response_text}"
+    Rails.logger.error "Cleaned response: #{cleaned_response}"
+
+    # Try to extract from text as fallback
+    extract_from_text(response_text)
   end
 
   def extract_from_text(text)

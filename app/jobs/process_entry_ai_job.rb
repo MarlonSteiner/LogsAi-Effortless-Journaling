@@ -10,17 +10,18 @@ class ProcessEntryAiJob < ApplicationJob
     # Generate banner image
     banner_url = BannerImageService.generate_for_entry(entry)
     entry.update(ai_banner_image_url: banner_url) if banner_url
+  end
 
     # Broadcast Turbo Stream update
-    ActionCable.server.broadcast(
-      "entry_#{entry.id}",
-        turbo_stream: ApplicationController.render(
-          partial: "journal_entries/entry_update",
-          locals: { entry: entry },
-          formats: [:turbo_stream]
-        )
-    )
-  end
+  #   ActionCable.server.broadcast(
+  #     "entry_#{entry.id}",
+  #       turbo_stream: ApplicationController.render(
+  #         partial: "journal_entries/entry_update",
+  #         locals: { entry: entry },
+  #         formats: [:turbo_stream]
+  #       )
+  #   )
+  # end
 
   private
 

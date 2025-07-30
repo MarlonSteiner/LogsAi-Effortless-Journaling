@@ -1,0 +1,29 @@
+<div class="entry-actions-menu" data-controller="entry-actions" data-entry-id="<%= entry.id %>">
+  <!-- Three dots button (initial state) -->
+  <button class="three-dots-btn" data-action="click->entry-actions#showActions" data-entry-actions-target="dotsBtn">
+    <i class="fas fa-ellipsis-h"></i>
+  </button>
+
+  <!-- Action buttons (hidden initially) -->
+  <div class="action-buttons" data-entry-actions-target="actionButtons" style="display: none;">
+    <button class="edit-btn" data-action="click->entry-actions#editEntry" title="Edit">
+      <i class="fas fa-edit"></i>
+    </button>
+    <button class="delete-btn" data-action="click->entry-actions#confirmDelete" title="Delete">
+      <i class="fas fa-trash"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="delete-modal" data-entry-actions-target="deleteModal" style="display: none;">
+  <div class="modal-overlay" data-action="click->entry-actions#cancelDelete"></div>
+  <div class="modal-content">
+    <h3>Delete Entry?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="cancel-btn" data-action="click->entry-actions#cancelDelete">Cancel</button>
+      <button class="confirm-delete-btn" data-action="click->entry-actions#deleteEntry">Delete</button>
+    </div>
+  </div>
+</div>
