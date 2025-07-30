@@ -1,48 +1,53 @@
 <div class="navbar navbar-expand-sm navbar-light navbar-lewagon mt-4">
   <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between w-100">
-
     </div>
-    <!-- Calendar Overview Link To-->
-  <button class="navbar-toggler" type="button" id="navbarToggle">
-    <%= image_tag "menu_icon.svg", alt: "Menu", class: "menu-icon" %>
-  </button>
 
-  <!-- Greeting text-->
-  <div class="flex-grow-1 text-center">
-    <% if defined?(@has_entry_today) && @has_entry_today %>
-      <!-- Show when there IS an entry -->
-      <div>Logs AI <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
-    <% else %>
-      <!-- Show when there is NO entry -->
-      <div>What's on your <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
-      <div>mind today <%= current_user&.first_name || 'User' %>?</div>
-    <% end %>
-  </div>
+    <!-- Menu Button -->
+    <button class="navbar-toggler" type="button" id="navbarToggle">
+      <%= image_tag "menu_icon.svg", alt: "Menu", class: "menu-icon" %>
+    </button>
 
-    <!-- Routing Button -->
+    <!-- Greeting text -->
+    <div class="flex-grow-1 text-center">
+      <% if defined?(@has_entry_today) && @has_entry_today %>
+        <div>Logs AI <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
+      <% else %>
+        <div>What's on your <%= image_tag "logo.svg", alt: "Logo", class: "logo-icon" %></div>
+        <div>mind today <%= current_user&.first_name || 'User' %>?</div>
+      <% end %>
+    </div>
+
+    <!-- Navigation Button -->
     <% if current_page?(root_path) %>
-    <!-- We're on homepage, link to calendar -->
       <%= link_to dashboard_calendar_path, class: "navbar-lewagon navbar-brand" do %>
         <%= image_tag "overview_button_square.svg", alt: "Go to Calendar" %>
       <% end %>
     <% else %>
-      <!-- We're NOT on homepage, link back to homepage -->
       <%= link_to root_path, class: "navbar-lewagon navbar-brand" do %>
         <%= image_tag "overview_button_diamond.svg", alt: "Go to Home" %>
       <% end %>
     <% end %>
 
-    <!-- Simple sliding sidebar -->
+    <!-- Sidebar -->
     <div class="simple-sidebar" id="simpleSidebar">
-      <div>
-        <button id="closeSidebar">Close</button>
+      <!-- Search Section -->
+      <div class="search-container">
+        <div class="search-input-container">
+          <input type="text"
+                id="sidebarSearchInput"
+                placeholder="Search"
+                autocomplete="off">
+          <button id="cancelSearch" class="cancel-btn" style="display: none;">Cancel</button>
+        </div>
+
+        <!-- Search Results -->
+        <div id="searchResults" class="search-results" style="display: none;"></div>
       </div>
-      <div>
-        <input type="text" placeholder="🔎 search">
-      </div>
-      <div>
-        <ul>
+
+      <!-- Default Content -->
+      <div class="default-content">
+        <ul class="menu-items">
           <li><a href="#">Home</a></li>
           <li><a href="#">Premium</a></li>
           <li><a href="#">About us</a></li>
@@ -50,21 +55,43 @@
         </ul>
       </div>
 
+      <!-- Account Section -->
+      <div class="account-section dropup">
       <% if current_user %>
-        <div class="d-flex align-items-center gap-1">
-            <div class="avatar-circle"><%= current_user.logo_initial %></div>
-            <p class="mb-0">Account</p>
+        <div
+          class="d-flex align-items-center gap-1 dropdown-toggle"
+          id="sidebarUserDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          style="cursor: pointer;"
+        >
+          <div class="avatar-circle">
+            <%= current_user.logo_initial %>
+          </div>
+          <p class="mb-0">Account</p>
         </div>
+
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sidebarUserDropdown">
+          <!-- … your menu items … -->
+          <li>
+            <%= link_to "Profile", edit_user_registration_path, class: "dropdown-item" %>
+          </li>
+          <li>
+            <%= link_to "Log out",
+                        destroy_user_session_path,
+                        method: :delete,
+                        class: "dropdown-item",
+                        data: { turbo_method: :delete } %>
+          </li>
+        </ul>
       <% else %>
-        <div class="d-flex align-items-center gap-1">
-            <div class="avatar-circle">?</div>
-            <p class="mb-0">Sign In</p>
-        </div>
+        <!-- sign‑in link… -->
       <% end %>
     </div>
 
-    <!-- Dark background overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    </div>
 
+    <!-- Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
   </div>
 </div>
