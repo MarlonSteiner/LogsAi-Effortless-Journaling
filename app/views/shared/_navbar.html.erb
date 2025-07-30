@@ -18,16 +18,12 @@
       <% end %>
     </div>
 
-    <!-- Navigation Button -->
-    <% if current_page?(root_path) %>
-      <%= link_to dashboard_calendar_path, class: "navbar-lewagon navbar-brand" do %>
-        <%= image_tag "overview_button_square.svg", alt: "Go to Calendar" %>
-      <% end %>
-    <% else %>
-      <%= link_to root_path, class: "navbar-lewagon navbar-brand" do %>
-        <%= image_tag "overview_button_diamond.svg", alt: "Go to Home" %>
-      <% end %>
-    <% end %>
+  <!-- Navigation Button -->
+  <%= link_to (current_page?(root_path) ? dashboard_calendar_path : root_path),
+              class: "navbar-lewagon navbar-brand",
+              id: "navButton" do %>
+    <%= image_tag "overview_button_square.svg", alt: "Navigate", class: "nav-icon" %>
+  <% end %>
 
     <!-- Sidebar -->
     <div class="simple-sidebar" id="simpleSidebar">
@@ -68,7 +64,6 @@
           <div class="avatar-circle">
             <%= current_user.logo_initial %>
           </div>
-          <p class="mb-0">Account</p>
         </div>
 
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sidebarUserDropdown">

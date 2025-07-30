@@ -154,4 +154,24 @@ document.addEventListener('turbo:load', function() {
       }
     }
   });
+
+  // Navigation button rotation
+  const navButton = document.getElementById('navButton');
+
+  if (navButton) {
+    navButton.addEventListener('click', function() {
+      const icon = this.querySelector('.nav-icon');
+      if (icon) {
+        // Get current rotation from the element's style
+        const currentTransform = icon.style.transform;
+        const currentRotation = currentTransform.match(/rotate\((\d+)deg\)/)
+          ? parseInt(currentTransform.match(/rotate\((\d+)deg\)/)[1])
+          : 0;
+
+        const newRotation = currentRotation + 90;
+        icon.style.transform = `rotate(${newRotation}deg)`;
+        console.log('Rotating from', currentRotation, 'to', newRotation);
+      }
+    });
+  }
 });
