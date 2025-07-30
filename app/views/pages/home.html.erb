@@ -15,14 +15,16 @@
   <div class="recording-interface" data-dashboard-target="recordingInterface">
 
     <!-- Main Record Button -->
-    <div class="record-section">
-      <button class="record-button"
-              data-audio-target="recordButton"
-              data-action="click->audio#toggleRecording">
-        <i class="fas fa-microphone"></i>
-      </button>
-      <div class="record-label">RECORD</div>
-      <div class="recording-status" data-audio-target="recordingStatus"></div>
+    <div class="main-record-div">
+      <div class="record-section">
+        <button class="record-button"
+                data-audio-target="recordButton"
+                data-action="click->audio#toggleRecording">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <div class="record-label">RECORD</div>
+        <div class="recording-status" data-audio-target="recordingStatus"></div>
+      </div>
     </div>
 
     <!-- Secondary Options -->
