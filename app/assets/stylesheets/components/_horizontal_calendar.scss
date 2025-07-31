@@ -38,6 +38,12 @@
     scroll-snap-align: center;
     position: relative;
 
+      &:hover {
+    background-color: rgba(89, 38, 185, 0.1);
+    transform: translateY(-2px);
+    border-color: $icon;
+    }
+
     .date-number {
       font-size: 18px;
       font-weight: 600;
@@ -67,8 +73,10 @@
     // Selected state
     &.selected,
     &.bg-primary {
-      background: #8B5CF6;
-      transform: scale(1.05);
+      background: $selected-button !important;
+      color: white !important;
+      border: 2px solid #5926B9 !important;
+      transform: translateY(-2px);
 
       .date-number {
         color: white;
@@ -90,6 +98,12 @@
       transform: scale(0.98);
     }
   }
+}
+
+.today-card {
+  background-color: rgba(91, 40, 186, 0.2) !important;
+  color: #5B28BA !important;
+  border: 1px solid rgba(43, 39, 81, 1.0) !important;
 }
 
 // Responsive adjustments
