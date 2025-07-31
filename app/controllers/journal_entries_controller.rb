@@ -189,14 +189,14 @@ class JournalEntriesController < ApplicationController
     @entry = current_user.journal_entries.find(params[:id])
     @entry.destroy
 
-    respond_to do |format|
-      format.json { render json: { success: true } }
-    end
-  rescue ActiveRecord::RecordNotFound
-    respond_to do |format|
-      format.json { render json: { success: false, error: 'Entry not found' } }
-    end
-end
+      respond_to do |format|
+        format.json { render json: { success: true } }
+      end
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.json { render json: { success: false, error: 'Entry not found' } }
+      end
+  end
 
   private
 
