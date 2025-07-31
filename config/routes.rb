@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users
+  mount ActionCable.server => '/cable'
+
   root 'dashboard#index'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -15,7 +17,19 @@ Rails.application.routes.draw do
     member do
       patch :regenerate_banner
     end
+    member do
+      get :status
+    end
+    member do
+      get :edit    # For JSON response to get entry data
+      patch :update # For updating entries
+      delete :destroy # For deleting entries
+    end
   end
+
+  # config/routes.rb
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/sidekiq'
 
   # Dashboard
   get "dashboard", to: "dashboard#index"

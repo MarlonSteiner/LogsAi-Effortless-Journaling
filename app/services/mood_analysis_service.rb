@@ -66,28 +66,35 @@ class MoodAnalysisService
     end
   end
 
+  # REPLACE your parse_response method in MoodAnalysisService with this:
   def parse_response(response_text)
-    # Try to extract JSON from the response
-    json_match = response_text.match(/\{.*\}/m)
+    # Clean up the response text - remove code block markers
+    cleaned_response = response_text.strip
 
-    if json_match
-      parsed = JSON.parse(json_match[0])
-
-      # Validate and sanitize the response
-      {
-        title: sanitize_title(parsed['title']),
-        mood: validate_mood(parsed['mood']),
-        color_theme: sanitize_color(parsed['color_theme']),
-        background_style: sanitize_text(parsed['background_style']),
-        summary: sanitize_text(parsed['summary']),
-        nutshell: sanitize_text(parsed['nutshell'])
-      }
-    else
-      # If we can't parse JSON, extract information manually
-      extract_from_text(response_text)
+    # Remove ```json and ``` if present
+    if cleaned_response.start_with?('```json')
+      cleaned_response = cleaned_response.gsub(/^```json\s*/, '').gsub(/\s*```$/, '')
+    elsif cleaned_response.start_with?('```')
+      cleaned_response = cleaned_response.gsub(/^```\s*/, '').gsub(/\s*```$/, '')
     end
+
+    # Try to parse as JSON
+    parsed = JSON.parse(cleaned_response)
+
+    {
+      title: sanitize_title(parsed['title']),
+      mood: validate_mood(parsed['mood']),
+      color_theme: sanitize_color(parsed['color_theme']),
+      background_style: sanitize_text(parsed['background_style']),
+      summary: sanitize_text(parsed['summary']),
+      nutshell: sanitize_text(parsed['nutshell'])
+    }
   rescue JSON::ParserError => e
     Rails.logger.error "JSON parsing error: #{e.message}"
+    Rails.logger.error "Raw response: #{response_text}"
+    Rails.logger.error "Cleaned response: #{cleaned_response}"
+
+    # Try to extract from text as fallback
     extract_from_text(response_text)
   end
 

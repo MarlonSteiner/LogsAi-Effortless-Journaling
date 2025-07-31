@@ -6,7 +6,11 @@
     </div>
 
     <div class="entry-content">
-      <h1 class="entry-title"><%= entry.title %></h1>
+      <!-- UPDATED: Add the entry actions menu next to the title -->
+      <div class="title-with-actions">
+        <h1 class="entry-title"><%= entry.title %></h1>
+        <%= render 'shared/entry_actions_menu', entry: entry %>
+      </div>
 
       <!-- Add banner section here -->
       <% if entry.ai_banner_image_url.present? %>

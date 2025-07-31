@@ -9,7 +9,7 @@ class DashboardController < ApplicationController
     end_date = today + 3.days               # 3 days in future
 
     @current_date = today
-    @selected_date = today  # Add this line for compatibility with your HTML
+    @selected_date = today.to_s  # Add this line for compatibility with your HTML
     @date_range = (start_date..end_date).to_a
   end
 
