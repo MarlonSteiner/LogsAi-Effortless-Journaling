@@ -75,15 +75,15 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # config/environments/development.rb
-  Rails.application.configure do
+  # Fix Scss bug
+
     # compile assets on the fly
-    config.assets.compile = true
+    #config.assets.compile = true
 
     # keep fingerprinting so helpers still resolve correctly
-    config.assets.digest = true
+    #config.assets.digest = true
 
     # disable debug so your JS is still concatenated
-    config.assets.debug = false
-  end
+    #config.assets.debug = false
+
 end

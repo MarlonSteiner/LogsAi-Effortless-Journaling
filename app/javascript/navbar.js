@@ -155,23 +155,41 @@ document.addEventListener('turbo:load', function() {
     }
   });
 
-  // Navigation button rotation
+  // Navigation button rotation with CSS classes
   const navButton = document.getElementById('navButton');
 
   if (navButton) {
-    navButton.addEventListener('click', function() {
+    navButton.addEventListener('click', function(e) {
       const icon = this.querySelector('.nav-icon');
       if (icon) {
-        // Get current rotation from the element's style
-        const currentTransform = icon.style.transform;
-        const currentRotation = currentTransform.match(/rotate\((\d+)deg\)/)
-          ? parseInt(currentTransform.match(/rotate\((\d+)deg\)/)[1])
-          : 0;
+        // Remove existing rotation classes
+        icon.classList.remove('rotate-90', 'rotate-180', 'rotate-270', 'rotate-360');
 
-        const newRotation = currentRotation + 90;
-        icon.style.transform = `rotate(${newRotation}deg)`;
+        // Get current rotation from localStorage or default to 0
+        let currentRotation = parseInt(localStorage.getItem('navIconRotation') || '0');
+
+        // Add 90 degrees
+        const newRotation = (currentRotation + 90) % 360;
+
+        // Apply new rotation class
+        if (newRotation > 0) {
+          icon.classList.add(`rotate-${newRotation}`);
+        }
+
+        // Store rotation state
+        localStorage.setItem('navIconRotation', newRotation);
+
         console.log('Rotating from', currentRotation, 'to', newRotation);
       }
-    });
+  });
+
+  // Set initial rotation on page load
+  const icon = navButton.querySelector('.nav-icon');
+  if (icon) {
+    const savedRotation = parseInt(localStorage.getItem('navIconRotation') || '0');
+    if (savedRotation > 0) {
+      icon.classList.add(`rotate-${savedRotation}`);
+    }
   }
+}
 });

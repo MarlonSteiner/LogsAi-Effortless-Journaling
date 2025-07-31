@@ -30,11 +30,26 @@
   height: 22px;
 }
 
-// Nav Icon
 .nav-icon {
   width: 32px;
   height: 32px;
   transition: transform 0.5s ease;
+
+  &.rotate-90 {
+    transform: rotate(90deg);
+  }
+
+  &.rotate-180 {
+    transform: rotate(180deg);
+  }
+
+  &.rotate-270 {
+    transform: rotate(270deg);
+  }
+
+  &.rotate-360 {
+    transform: rotate(360deg);
+  }
 }
 
 // Sidebar
