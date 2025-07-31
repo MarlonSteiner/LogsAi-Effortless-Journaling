@@ -1,4 +1,4 @@
-# app/services/mood_analysis_service.rb
+# model
 class MoodAnalysisService
   EMOTION_CATEGORIES = [
     'joyful', 'anxious', 'contemplative', 'excited', 'peaceful', 'frustrated',
