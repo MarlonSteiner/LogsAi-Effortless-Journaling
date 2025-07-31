@@ -7,7 +7,7 @@ class ProcessEntryAiJob < ApplicationJob
     # Process AI analysis
     process_with_ai(entry)
 
-    # # Generate banner image
+    # Generate banner image
     # banner_url = BannerImageService.generate_for_entry(entry)
     # entry.update(ai_banner_image_url: banner_url) if banner_url
   end
