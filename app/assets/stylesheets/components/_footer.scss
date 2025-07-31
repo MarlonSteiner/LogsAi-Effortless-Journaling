@@ -1,0 +1,49 @@
+// Footer Component Styles
+.app-footer {
+  background-color: var(--bs-light);
+  border-top: 1px solid var(--bs-border-color);
+  margin-top: 2rem;
+
+  // Ensure footer stays at bottom on short pages
+  flex-shrink: 0;
+
+  .footer-brand {
+    font-weight: 600;
+    color: var(--bs-dark);
+    font-size: 1.1rem;
+  }
+
+  .footer-links {
+    .footer-link {
+      color: var(--bs-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--bs-primary);
+        text-decoration: none;
+      }
+    }
+  }
+
+  // Mobile-first responsive adjustments
+  @media (max-width: 768px) {
+    .footer-links {
+      .footer-link {
+        display: inline-block;
+        margin: 0 0.5rem;
+      }
+    }
+  }
+
+  // Dark theme support (if you add it later)
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--bs-dark);
+    border-top-color: var(--bs-secondary);
+
+    .footer-brand {
+      color: var(--bs-light);
+    }
+  }
+}

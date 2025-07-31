@@ -10,9 +10,19 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body><%= render "shared/navbar" %>
-  <%= render "shared/flashes" %>
+  <body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <%= render "shared/navbar" %>
 
-    <%= yield %>
+    <!-- Flash messages -->
+    <%= render "shared/flashes" %>
+
+    <!-- Main content wrapper -->
+    <main class="flex-grow-1">
+      <%= yield %>
+    </main>
+
+    <!-- Footer -->
+    <%= render 'shared/footer' %>
   </body>
 </html>
