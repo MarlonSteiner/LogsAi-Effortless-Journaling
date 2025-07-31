@@ -1,4 +1,4 @@
-// app/javascript/controllers/dashboard_new_controller.js
+// app/javascript/controllers/dashboard_controller.js
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -33,13 +33,110 @@ export default class extends Controller {
 
       const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2)
 
-      // Changed to smooth animation
+      // Smooth scroll animation
       container.scrollTo({
         left: Math.max(0, scrollPosition),
         behavior: 'smooth'
       })
     }
   }
+
+
+  updateSelectionFromScroll() {
+    if (!this.hasCalendarContainerTarget) return
+
+    const container = this.calendarContainerTarget
+    const containerCenter = container.scrollLeft + (container.offsetWidth / 2)
+
+    let bestCard = null
+    let bestScore = 0
+
+    this.dateCardTargets.forEach(card => {
+      const cardLeft = card.offsetLeft
+      const cardRight = cardLeft + card.offsetWidth
+      const cardCenter = cardLeft + (card.offsetWidth / 2)
+
+      // SNAPPY: Use your original overlap logic but with better threshold
+      const centerAreaLeft = containerCenter - (card.offsetWidth * 0.4) // Reduced for more responsive
+      const centerAreaRight = containerCenter + (card.offsetWidth * 0.4) // Reduced for more responsive
+
+      const overlapLeft = Math.max(cardLeft, centerAreaLeft)
+      const overlapRight = Math.min(cardRight, centerAreaRight)
+      const overlap = Math.max(0, overlapRight - overlapLeft)
+      const overlapScore = overlap / card.offsetWidth
+
+      if (overlapScore > bestScore && overlapScore > 0.2) { // Reduced from 0.3 to 0.2 for snappier selection
+        bestScore = overlapScore
+        bestCard = card
+      }
+    })
+
+    if (bestCard && bestCard.dataset.date !== this.currentDateValue) {
+      this.currentDateValue = bestCard.dataset.date
+      this.updateSelectedDate(bestCard)
+
+      // THE FIX: Don't call loadEntryForDate during scroll - it triggers centering
+      // Instead, load content without the centering side effect
+      this.loadEntryForDateQuiet()
+      this.updateFormDate(bestCard.dataset.date)
+      this.updateControllerDates(bestCard.dataset.date)
+    }
+  }
+
+  async loadEntryForDateQuiet() {
+    try {
+      const url = this.showUrlValue.replace('DATE_PLACEHOLDER', this.currentDateValue)
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.entry) {
+        this.showEntryDisplay(result.entry)
+      } else {
+        this.showRecordingInterface()
+      }
+    } catch (error) {
+      console.error('Error loading entry:', error)
+      this.showRecordingInterface()
+    }
+  }
+
+  // ADD this new method to load content without centering:
+  // async loadEntryForDateWithoutCentering() {
+  //   try {
+  //     const url = this.showUrlValue.replace('DATE_PLACEHOLDER', this.currentDateValue)
+  //     const response = await fetch(url, {
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'X-Requested-With': 'XMLHttpRequest'
+  //       }
+  //     })
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`)
+  //     }
+
+  //     const result = await response.json()
+
+  //     if (result.entry) {
+  //       this.showEntryDisplay(result.entry)
+  //     } else {
+  //       this.showRecordingInterface()
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading entry:', error)
+  //     this.showRecordingInterface()
+  //   }
+  // }
 
   setupScrollDetection() {
     if (this.hasCalendarContainerTarget) {
@@ -48,7 +145,7 @@ export default class extends Controller {
         clearTimeout(scrollTimeout)
         scrollTimeout = setTimeout(() => {
           this.updateSelectionFromScroll()
-        }, 50) // Fast response
+        }, 10) // Very fast - 10ms for snappy selection
       })
     }
   }
@@ -77,18 +174,16 @@ export default class extends Controller {
       const cardRight = cardLeft + card.offsetWidth
       const cardCenter = cardLeft + (card.offsetWidth / 2)
 
-      // How much of the card is in the center area
-      const centerAreaLeft = containerCenter - (card.offsetWidth * 0.5) // Increased from 0.4
-      const centerAreaRight = containerCenter + (card.offsetWidth * 0.5) // Increased from 0.4
+      // STRICTER: Only select if card center is very close to container center
+      const centerDistance = Math.abs(cardCenter - containerCenter)
+      const maxDistance = card.offsetWidth * 0.3 // Allow 30% of card width deviation
 
-      const overlapLeft = Math.max(cardLeft, centerAreaLeft)
-      const overlapRight = Math.min(cardRight, centerAreaRight)
-      const overlap = Math.max(0, overlapRight - overlapLeft)
-      const overlapScore = overlap / card.offsetWidth
-
-      if (overlapScore > bestScore && overlapScore > 0.3) { // Reduced from 0.6 to 0.3
-        bestScore = overlapScore
-        bestCard = card
+      if (centerDistance < maxDistance) {
+        const score = 1 - (centerDistance / maxDistance) // Higher score for closer to center
+        if (score > bestScore) {
+          bestScore = score
+          bestCard = card
+        }
       }
     })
 
@@ -371,24 +466,16 @@ export default class extends Controller {
     this.calendarSectionTarget.style.display = 'none' // Hide calendar in text form
   }
 
-  // debug version:
+  // submitTextEntry method with this clean version:
   async submitTextEntry(event) {
-    console.log('🔥🔥🔥 DEFINITELY NEW CODE - TIMESTAMP: ' + Date.now())
     event.preventDefault()
 
     const formData = new FormData(event.target)
 
-    // CRITICAL DEBUG - Let's see what's happening with the property
-    console.log('=== SPINNER DEBUG ===')
-    console.log('editingEntryIdValue:', this.editingEntryIdValue)
-    console.log('typeof editingEntryIdValue:', typeof this.editingEntryIdValue)
-    console.log('editingEntryId (old):', this.editingEntryId)
-
+    // Check for update vs create
     const isUpdate = this.editingEntryIdValue &&
-                      !isNaN(this.editingEntryIdValue) &&
-                      this.editingEntryIdValue > 0
-
-    console.log('Is Update:', isUpdate)
+                    !isNaN(this.editingEntryIdValue) &&
+                    this.editingEntryIdValue > 0
 
     const url = isUpdate ? `/journal_entries/${this.editingEntryIdValue}` : this.createUrlValue
     const method = isUpdate ? 'PATCH' : 'POST'
@@ -396,13 +483,9 @@ export default class extends Controller {
     try {
       // Show spinner for new entries only (not for edits)
       if (!isUpdate) {
-        console.log('ABOUT TO SHOW SPINNER')
-        console.log('showTextLoading method exists:', typeof this.showTextLoading)
         this.showTextLoading()
-        console.log('SPINNER SHOULD BE VISIBLE NOW')
       }
 
-      console.log('About to fetch...')
       const response = await fetch(url, {
         method: method,
         body: formData,
@@ -416,7 +499,6 @@ export default class extends Controller {
       if (!response.ok) throw new Error('Failed to save entry')
 
       const result = await response.json()
-      console.log('Fetch completed, response received')
 
       if (result.success) {
         // Reset editing state
@@ -450,9 +532,7 @@ export default class extends Controller {
       alert('Failed to save entry')
     } finally {
       if (!isUpdate) {
-        console.log('ABOUT TO HIDE SPINNER')
         this.hideTextLoading()
-        console.log('SPINNER SHOULD BE HIDDEN NOW')
       }
     }
   }
