@@ -13,22 +13,37 @@
 
     .filter-buttons {
       display: flex;
+      justify-content: center; // Center the buttons
       gap: 1rem;
       margin-bottom: 1rem;
+      padding-top: 4px; // Add top padding to prevent cropping when buttons lift up
 
       .filter-btn {
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        border-radius: 25px;
-        padding: 0.75rem 1.5rem;
-        color: white;
+        background: transparent; // Transparent background
+        border: 2px solid $border; // Your purple border color
+        border-radius: 12px; // More rectangular shape
+        padding: 0.6rem 1.5rem; // Slightly less height
+        color: rgba(255, 255, 255, 0.7);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
+        min-width: 80px; // Ensure consistent button sizes
 
-        &:hover, &.active {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
+        // Hover effect
+        &:hover:not(.active) {
+          border-color: $icon; // Purple border on hover
+          color: white;
+          background: rgba($icon, 0.1); // Subtle purple background
+          transform: translateY(-1px); // Slight lift effect
+        }
+
+        // Active/selected state with purple gradient
+        &.active {
+          background: $selected-button; // Your purple gradient
+          border-color: $icon; // Your purple icon color
+          color: white;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(89, 38, 185, 0.3); // Purple glow
         }
       }
     }
@@ -70,8 +85,8 @@
         }
 
         &.selected {
-          background: rgba(147, 90, 240, 1);
-          border-color: rgba(147, 90, 240, 1);
+          background: $selected-button; // Use your purple gradient
+          border-color: $icon; // Use your purple icon color
           transform: translateY(-2px);
         }
       }
