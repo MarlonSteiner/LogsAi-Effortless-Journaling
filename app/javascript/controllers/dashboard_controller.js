@@ -232,7 +232,7 @@ export default class extends Controller {
   // Update entry content in the display
   updateEntryContent(entry) {
     console.log('Entry data:', entry);
-    
+
     const titleElement = this.entryDisplayTarget.querySelector('.entry-title')
     const nutshellElement = this.entryDisplayTarget.querySelector('.entry-nutshell')
     const summaryElement = this.entryDisplayTarget.querySelector('.entry-summary')
