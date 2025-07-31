@@ -62,44 +62,54 @@ class JournalEntriesController < ApplicationController
   end
 
   def create
-    @journal_entry = current_user.journal_entries.build(journal_entry_params)
-    @journal_entry.entry_date = params[:journal_entry][:entry_date] || Date.current
+  @journal_entry = current_user.journal_entries.build(journal_entry_params)
+  @journal_entry.entry_date = params[:journal_entry][:entry_date] || Date.current
 
-    respond_to do |format|
-      if @journal_entry.save
-        # Process AI synchronously - WAIT for completion before responding
-        if should_process_with_ai?
-          ProcessEntryAiJob.perform_now(@journal_entry.id)
-          @journal_entry.reload  # Get the updated AI fields from database
-        end
-
-        format.html { redirect_to root_path, notice: 'Journal entry was successfully created.' }
-        format.json do
-          render json: {
-            success: true,
-            entry: {
-              id: @journal_entry.id,
-              date: @journal_entry.entry_date.to_s,
-              emotion_category: emotion_color_category(@journal_entry.ai_mood_label),
-              title: @journal_entry.title,
-              content: @journal_entry.content,
-              ai_mood_label: @journal_entry.ai_mood_label,
-              ai_summary: @journal_entry.ai_summary,
-              ai_nutshell: @journal_entry.ai_nutshell,
-              input_type: @journal_entry.input_type,
-              entry_date: @journal_entry.entry_date,
-              formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
-              media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil,
-              ai_banner_image_url: @journal_entry.ai_banner_image_url
-            }
-          }
-        end
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: { success: false, errors: @journal_entry.errors.full_messages } }
+  respond_to do |format|
+    if @journal_entry.save
+      # Process AI first
+      if should_process_with_ai?
+        EntryAiProcessor.process(@journal_entry)
+        @journal_entry.reload
       end
+
+      # Generate banner AFTER mood is set
+      if @journal_entry.ai_mood_label.present?
+        banner_url = BannerImageService.generate_for_entry(@journal_entry)
+        @journal_entry.update(ai_banner_image_url: banner_url) if banner_url
+      end
+
+      format.html { redirect_to root_path, notice: 'Journal entry was successfully created.' }
+
+      format.json do
+        render json: {
+          success: true,
+          entry: {
+            id: @journal_entry.id,
+            date: @journal_entry.entry_date.to_s,
+            emotion_category: emotion_color_category(@journal_entry.ai_mood_label),
+            title: @journal_entry.title,
+            content: @journal_entry.content,
+            ai_mood_label: @journal_entry.ai_mood_label,
+            ai_summary: @journal_entry.ai_summary,
+            ai_nutshell: @journal_entry.ai_nutshell,
+            input_type: @journal_entry.input_type,
+            entry_date: @journal_entry.entry_date,
+            formatted_date: @journal_entry.entry_date.strftime("%B %d, %Y"),
+            media_url: @journal_entry.media_file.attached? ? url_for(@journal_entry.media_file) : nil,
+            ai_banner_image_url: @journal_entry.ai_banner_image_url
+          }
+        }
+      end
+    else
+      format.html { render :new, status: :unprocessable_entity }
+      format.json { render json: { success: false, errors: @journal_entry.errors.full_messages } }
     end
   end
+end
+
+
+
 
   def regenerate_banner
     banner_url = BannerImageService.generate_for_entry(@journal_entry)
@@ -186,17 +196,16 @@ class JournalEntriesController < ApplicationController
   end
 
   def destroy
-    @entry = current_user.journal_entries.find(params[:id])
-    @entry.destroy
-
-      respond_to do |format|
-        format.json { render json: { success: true } }
-      end
-    rescue ActiveRecord::RecordNotFound
-      respond_to do |format|
-        format.json { render json: { success: false, error: 'Entry not found' } }
-      end
+    @entry = current_user.journal_entries.find_by(id: params[:id])
+  
+    if @entry
+      @entry.destroy
+      render json: { success: true }
+    else
+      render json: { success: false, error: 'Entry not found' }, status: :not_found
+    end
   end
+
 
   private
 
