@@ -14,4 +14,10 @@ class ApplicationController < ActionController::Base
     # Permit name and surname for account update
     devise_parameter_sanitizer.permit(:account_update, keys: [:name, :surname])
   end
+
+  # Search function
+  def set_search_data
+    # Only set if user is signed in and you need it
+    @recent_entries = current_user&.journal_entries&.recent&.limit(5)
+  end
 end

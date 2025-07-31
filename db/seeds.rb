@@ -1,20 +1,21 @@
 # This file should ensure the existence of records required to run the application in every environment (production,
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
 
-# db/seeds.rb
-puts "🧹 Cleaning database..."
-EntryTag.destroy_all
-JournalEntry.destroy_all
-MoodSummary.destroy_all
-Mood.destroy_all
-User.destroy_all
+puts "🌱 Starting seed process..."
+
+# Only destroy in development/test - be safe in production
+if Rails.env.development? || Rails.env.test? || ENV['FORCE_SEED_RESET'] == 'true'
+  puts "🧹 Cleaning database (safe order)..."
+  # Order matters for foreign key constraints
+  EntryTag.delete_all
+  JournalEntry.delete_all
+  MoodSummary.delete_all
+  Mood.delete_all
+  User.delete_all
+else
+  puts "🔒 Production mode - skipping data cleanup (use FORCE_SEED_RESET=true to override)"
+end
 
 puts "🎭 Creating moods..."
 moods_data = [
@@ -25,16 +26,15 @@ moods_data = [
 ]
 
 moods_data.each do |mood_category|
-  Mood.create!(category: mood_category)
+  Mood.find_or_create_by!(category: mood_category)
 end
 
 puts "👤 Creating sample user..."
-user = User.create!(
-  email: "demo@logsai.com",
-  password: "password",
-  name: "Demo",
-  surname: "User"
-)
+user = User.find_or_create_by!(email: "demo@logsai.com") do |u|
+  u.password = "password"
+  u.name = "Demo"
+  u.surname = "User"
+end
 
 puts "📔 Creating sample journal entries..."
 sample_entries = [
@@ -63,24 +63,35 @@ sample_entries = [
 
 sample_entries.each do |entry_data|
   moods = entry_data.delete(:moods)
-  entry = JournalEntry.create!(entry_data.merge(user: user))
 
+  # Check if entry already exists to avoid duplicates
+  entry = JournalEntry.find_or_create_by!(
+    title: entry_data[:title],
+    user: user
+  ) do |e|
+    e.content = entry_data[:content]
+    e.input_type = entry_data[:input_type]
+    e.entry_date = entry_data[:entry_date]
+  end
+
+  # Add mood tags if they don't already exist
   moods.each do |mood_name|
     mood = Mood.find_by(category: mood_name)
-    EntryTag.create!(journal_entry: entry, mood: mood) if mood
+    if mood && !EntryTag.exists?(journal_entry: entry, mood: mood)
+      EntryTag.create!(journal_entry: entry, mood: mood)
+    end
   end
 end
 
 puts "📊 Creating sample mood summary..."
-MoodSummary.create!(
-  user: user,
-  average_mood_summary: "Generally positive with some reflective moments",
-  dominant_moods: "happy, energetic, grateful, reflective",
-  entry_count: 4
-)
+MoodSummary.find_or_create_by!(user: user) do |summary|
+  summary.average_mood_summary = "Generally positive with some reflective moments"
+  summary.dominant_moods = "happy, energetic, grateful, reflective"
+  summary.entry_count = user.journal_entries.count
+end
 
 puts "✅ Seeding completed!"
-puts "📈 Created:"
+puts "📈 Database stats:"
 puts "  - #{User.count} users"
 puts "  - #{Mood.count} moods"
 puts "  - #{JournalEntry.count} journal entries"

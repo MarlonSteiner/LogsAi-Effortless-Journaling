@@ -40,6 +40,15 @@ Rails.application.routes.draw do
   get "about", to: "pages#about"
   get "privacy", to: "pages#privacy"
 
+  # Autocomplete
+  get 'search/autocomplete', to: 'search#autocomplete'
+  # or
+  resources :search, only: [] do
+    collection do
+      get :autocomplete
+    end
+  end
+
   # User profile
   resources :users, only: [:show, :edit, :update]
 
