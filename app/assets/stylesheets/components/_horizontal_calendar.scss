@@ -1,69 +1,107 @@
 // app/assets/stylesheets/components/_horizontal_calendar.scss
 @import '../config/colors';
 
-.horizontal-calendar,
-.d-flex.gap-2.my-3.overflow-auto {
-  margin-top: 40px;
+.horizontal-calendar {
   margin-bottom: 20px;
-  padding-top: 15px;
+
+  .calendar-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    gap: 4px;
+    padding: 0 20px;
+
+    // Hide scrollbar but keep functionality
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .date-card {
+    // Exactly 58px width for 5-card layout
+    min-width: 58px;
+    width: 58px;
+    height: 80px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    scroll-snap-align: center;
+    position: relative;
+
+    .date-number {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .date-weekday {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+    }
+
+    .emotion-dot {
+      position: absolute;
+      bottom: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+
+      &.good { background: #4CAF50; }
+      &.okay { background: #FF9800; }
+      &.bad { background: #f44336; }
+      &.neutral { background: rgba(255, 255, 255, 0.5); }
+    }
+
+    // Selected state
+    &.selected,
+    &.bg-primary {
+      background: #8B5CF6;
+      transform: scale(1.05);
+
+      .date-number {
+        color: white;
+      }
+
+      .date-weekday {
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    // Hover state
+    &:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    // Active state
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
 
-.today-card {
-  background-color: rgba(91, 40, 186, 0.2) !important;
-  color: #5B28BA !important;
-  border: 1px solid rgba(43, 39, 81, 1.0) !important;
-}
-
-.date-card {
-  min-width: 58px;
-  min-height: 80px;
-  padding: 12px 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid $border;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  &:hover {
-    background-color: rgba(89, 38, 185, 0.1);
-    transform: translateY(-2px);
-    border-color: $icon;
-  }
-
-  &.selected,
-  &.bg-primary {
-    background: $selected-button !important;
-    color: white !important;
-    border: 2px solid #5926B9 !important;
-    transform: translateY(-2px);
-  }
-
-  div:first-child {
-    font-size: 1.3rem;
-    font-weight: bold;
-    line-height: 1.2;
-  }
-
-  div:last-child {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    margin-top: 2px;
+// Responsive adjustments
+@media (max-width: 768px) {
+  .horizontal-calendar {
+    .calendar-container {
+      padding: 0 16px;
+    }
   }
 }
 
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.hide-scrollbar {
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

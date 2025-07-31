@@ -28,8 +28,8 @@ Rails.application.routes.draw do
   end
 
   # config/routes.rb
-  require 'sidekiq/web'
-  mount Sidekiq::Web => '/sidekiq'
+  # require 'sidekiq/web'
+  # mount Sidekiq::Web => '/sidekiq'
 
   # Dashboard
   get "dashboard", to: "dashboard#index"

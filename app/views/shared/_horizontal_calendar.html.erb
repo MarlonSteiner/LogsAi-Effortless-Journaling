@@ -1,11 +1,31 @@
-<div class="d-flex gap-2 my-3 overflow-auto hide-scrollbar" data-dashboard-target="calendarContainer">
-  <% @date_range.each do |date| %>
-    <div class="date-card border rounded-4 px-3 text-center cursor-pointer <%= 'today-card' if date == @current_date %>"
-          data-action="click->dashboard#loadDateContent"
-          data-date="<%= date.to_s %>"
-          data-dashboard-current-class="bg-primary text-white">
-      <div><%= date.day %></div>
-      <div><%= date.strftime("%a") %></div>
-    </div>
-  <% end %>
+<!-- app/views/shared/_horizontal_calendar.html.erb -->
+<div class="horizontal-calendar">
+  <div class="calendar-container" data-dashboard-target="calendarContainer">
+    <%
+      start_date = Date.current - 30.days
+      end_date = Date.current + 3.days
+      date_range = (start_date..end_date)
+    %>
+
+    <% date_range.each do |date| %>
+      <div class="date-card <%= 'selected' if date == Date.current %>"
+            data-date="<%= date.strftime('%Y-%m-%d') %>"
+            data-dashboard-target="dateCard"
+            data-action="click->dashboard#loadDateContent">
+
+        <div class="date-number">
+          <%= date.day %>
+        </div>
+
+        <div class="date-weekday">
+          <%= date.strftime('%a') %>
+        </div>
+
+        <!-- Emotion indicator for entries -->
+        <% if entry = current_user.journal_entries.find_by(entry_date: date) %>
+          <div class="emotion-dot <%= emotion_color_category(entry.ai_mood_label) %>"></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 </div>
