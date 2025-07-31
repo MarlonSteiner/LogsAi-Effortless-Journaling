@@ -1,4 +1,4 @@
-// app/javascript/controllers/dashboard_controller.js
+// app/javascript/controllers/dashboard_new_controller.js
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -41,7 +41,6 @@ export default class extends Controller {
     }
   }
 
-  // REMOVED DUPLICATE - kept only this version
   setupScrollDetection() {
     if (this.hasCalendarContainerTarget) {
       let scrollTimeout
@@ -372,13 +371,23 @@ export default class extends Controller {
     this.calendarSectionTarget.style.display = 'none' // Hide calendar in text form
   }
 
+  // debug version:
   async submitTextEntry(event) {
+    console.log('🔥🔥🔥 DEFINITELY NEW CODE - TIMESTAMP: ' + Date.now())
     event.preventDefault()
 
     const formData = new FormData(event.target)
 
-    const isUpdate = this.editingEntryIdValue !== null && this.editingEntryIdValue !== undefined
-    console.log('=== TEXT ENTRY DEBUG ===')
+    // CRITICAL DEBUG - Let's see what's happening with the property
+    console.log('=== SPINNER DEBUG ===')
+    console.log('editingEntryIdValue:', this.editingEntryIdValue)
+    console.log('typeof editingEntryIdValue:', typeof this.editingEntryIdValue)
+    console.log('editingEntryId (old):', this.editingEntryId)
+
+    const isUpdate = this.editingEntryIdValue &&
+                      !isNaN(this.editingEntryIdValue) &&
+                      this.editingEntryIdValue > 0
+
     console.log('Is Update:', isUpdate)
 
     const url = isUpdate ? `/journal_entries/${this.editingEntryIdValue}` : this.createUrlValue
@@ -387,10 +396,13 @@ export default class extends Controller {
     try {
       // Show spinner for new entries only (not for edits)
       if (!isUpdate) {
-        console.log('Showing text loading spinner...')
+        console.log('ABOUT TO SHOW SPINNER')
+        console.log('showTextLoading method exists:', typeof this.showTextLoading)
         this.showTextLoading()
+        console.log('SPINNER SHOULD BE VISIBLE NOW')
       }
 
+      console.log('About to fetch...')
       const response = await fetch(url, {
         method: method,
         body: formData,
@@ -404,6 +416,7 @@ export default class extends Controller {
       if (!response.ok) throw new Error('Failed to save entry')
 
       const result = await response.json()
+      console.log('Fetch completed, response received')
 
       if (result.success) {
         // Reset editing state
@@ -437,8 +450,9 @@ export default class extends Controller {
       alert('Failed to save entry')
     } finally {
       if (!isUpdate) {
-        console.log('Hiding text loading spinner...')
+        console.log('ABOUT TO HIDE SPINNER')
         this.hideTextLoading()
+        console.log('SPINNER SHOULD BE HIDDEN NOW')
       }
     }
   }
