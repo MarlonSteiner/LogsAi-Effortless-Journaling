@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      # Comment out Postgres if you use SQLite in test
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/rails_test
+      REDIS_URL: redis://localhost:6379/1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Set up Node (if you use esbuild/yarn)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install JS deps (skip if no yarn.lock)
+        run: |
+          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; fi
+
+      - name: Prepare database
+        run: |
+          bin/rails db:prepare
+
+      - name: Precompile assets (safe to skip if importmap only)
+        run: |
+          if [ -d app/assets ] || [ -d app/javascript ]; then bin/rails assets:precompile; fi
+
+      - name: Run tests (RSpec or Minitest)
+        run: |
+          if [ -d spec ]; then bundle exec rspec; else bin/rails test; fi
+
+      - name: RuboCop
+        run: |
+          if bundle show rubocop >/dev/null 2>&1; then bundle exec rubocop; else echo "RuboCop not installed"; fi
+
+      - name: Brakeman
+        run: |
+          if bundle show brakeman >/dev/null 2>&1; then bundle exec brakeman -q -w2; else echo "Brakeman not installed"; fi
+
+      - name: Bundler Audit
+        run: |
+          if bundle show bundler-audit >/dev/null 2>&1; then bundle exec bundler-audit update && bundle exec bundler-audit check --ignore CVE-0000-0000; else echo "bundler-audit not installed"; fi
