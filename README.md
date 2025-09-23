@@ -4,15 +4,21 @@ Effortless journaling from voice, text, or photo. Logsai turns your day into a c
 
 ![OG_Image](https://github.com/user-attachments/assets/55fe4a9c-4e89-400f-a8da-27763402d4ef)
 
-
-
 <p align="center">
-  <a href="#demo">Demo</a> •
+  <a href="#preview">Preview</a> •
+  <a href="#value-proposition">Value Proposition</a> •
+  <a href="#the-pain-we-solve">The Pain We Solve</a> •
   <a href="#features">Features</a> •
   <a href="#quick-start">Quick Start</a> •
+  <a href="#important">Important</a> •
+  <a href="#environment-variables">Environment Variables</a> •
   <a href="#how-it-works">How It Works</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#api-usage-notes">API Usage Notes</a> •
   <a href="#roadmap">Roadmap</a> •
-  <a href="#team">Team</a>
+  <a href="#team">Team</a> •
+  <a href="#license">License</a> •
+  <a href="#repo-about-and-topics">Repo About and Topics</a>
 </p>
 
 ## Preview
