@@ -36,8 +36,9 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/rails_test
       REDIS_URL: redis://localhost:6379/1
       OPENAI_API_KEY: "test"
-      OPENAI_ACCESS_TOKEN: "test"           # ← added to satisfy your initializer
+      OPENAI_ACCESS_TOKEN: "test"
       CLOUDINARY_URL: "cloudinary://key:secret@cloud/test"
+      SKIP_SEEDS: "true"           # let your seeds.rb optionally skip in CI
 
     steps:
       - uses: actions/checkout@v4
@@ -66,20 +67,26 @@ jobs:
         if: hashFiles('yarn.lock') != ''
         run: yarn install --frozen-lockfile
 
-      - name: Prepare database
-        run: bin/rails db:prepare
+      # 👇 No-seeds DB setup to avoid attachment-heavy seeds
+      - name: Prepare database (no seeds)
+        run: |
+          bundle exec rails db:drop || true
+          bundle exec rails db:create
+          if [ -f db/schema.rb ]; then
+            bundle exec rails db:schema:load
+          else
+            bundle exec rails db:migrate
+          fi
 
-      # Optional for CI; allow it to fail without failing the job
       - name: Precompile assets (optional)
         continue-on-error: true
         run: |
-          if [ -d app/assets ] || [ -d app/javascript ]; then bin/rails assets:precompile; fi
+          if [ -d app/assets ] || [ -d app/javascript ]; then bundle exec rails assets:precompile; fi
 
       - name: Run tests (RSpec or Minitest)
         run: |
-          if [ -d spec ]; then bundle exec rspec; else bin/rails test; fi
+          if [ -d spec ]; then bundle exec rspec; else bundle exec rails test; fi
 
-      # Let lint and security checks report but not fail the build (for now)
       - name: RuboCop
         continue-on-error: true
         run: |
