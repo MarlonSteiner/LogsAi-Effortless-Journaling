@@ -35,6 +35,8 @@ jobs:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/rails_test
       REDIS_URL: redis://localhost:6379/1
+      OPENAI_API_KEY: "test"                               # dummy key so OpenAI initializer won't crash
+      CLOUDINARY_URL: "cloudinary://key:secret@cloud/test" # dummy URL if a Cloudinary initializer runs
 
     steps:
       - uses: actions/checkout@v4
