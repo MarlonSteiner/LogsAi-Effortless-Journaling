@@ -1,5 +1,6 @@
 #  <img src="docs/logsai-logo.png" alt="Logsai logo" width="30"> LOGS AI
 
+
 Effortless journaling from voice, text, or photo. Logsai turns your day into a clean, structured entry using intelligent summarization.
 
 ![OG_Image](https://github.com/user-attachments/assets/55fe4a9c-4e89-400f-a8da-27763402d4ef)
