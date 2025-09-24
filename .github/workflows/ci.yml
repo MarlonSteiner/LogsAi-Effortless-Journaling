@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      # Comment out Postgres if you use SQLite in test
       postgres:
         image: postgres:16
         env:
@@ -35,11 +34,17 @@ jobs:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/rails_test
       REDIS_URL: redis://localhost:6379/1
-      OPENAI_API_KEY: "test"                               # dummy key so OpenAI initializer won't crash
-      CLOUDINARY_URL: "cloudinary://key:secret@cloud/test" # dummy URL if a Cloudinary initializer runs
+      OPENAI_API_KEY: "test"
+      CLOUDINARY_URL: "cloudinary://key:secret@cloud/test"
 
     steps:
       - uses: actions/checkout@v4
+
+      # ✅ Add this step
+      - name: Install system packages for native gems
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev build-essential
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -58,8 +63,7 @@ jobs:
           if [ -f yarn.lock ]; then yarn install --frozen-lockfile; fi
 
       - name: Prepare database
-        run: |
-          bin/rails db:prepare
+        run: bin/rails db:prepare
 
       - name: Precompile assets (safe to skip if importmap only)
         run: |
