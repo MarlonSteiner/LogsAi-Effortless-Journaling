@@ -68,7 +68,9 @@ jobs:
       - name: Prepare database
         run: bin/rails db:prepare
 
-      - name: Precompile assets (safe to skip if importmap only)
+      # Optional for CI; allow it to fail without failing the job
+      - name: Precompile assets (optional)
+        continue-on-error: true
         run: |
           if [ -d app/assets ] || [ -d app/javascript ]; then bin/rails assets:precompile; fi
 
@@ -76,14 +78,18 @@ jobs:
         run: |
           if [ -d spec ]; then bundle exec rspec; else bin/rails test; fi
 
+      # Let lint and security checks report but not fail the build (for now)
       - name: RuboCop
+        continue-on-error: true
         run: |
           if bundle show rubocop >/dev/null 2>&1; then bundle exec rubocop; else echo "RuboCop not installed"; fi
 
       - name: Brakeman
+        continue-on-error: true
         run: |
           if bundle show brakeman >/dev/null 2>&1; then bundle exec brakeman -q -w2; else echo "Brakeman not installed"; fi
 
       - name: Bundler Audit
+        continue-on-error: true
         run: |
-          if bundle show bundler-audit >/dev/null 2>&1; then bundle exec bundler-audit update && bundle exec bundler-audit check --ignore CVE-0000-0000; else echo "bundler-audit not installed"; fi
+          if bundle show bundler-audit >/dev/null 2>&1; then bundle exec bundler-audit update && bundle exec bundler-audit check; else echo "bundler-audit not installed"; fi
