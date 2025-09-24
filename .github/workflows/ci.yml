@@ -36,6 +36,7 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/rails_test
       REDIS_URL: redis://localhost:6379/1
       OPENAI_API_KEY: "test"
+      OPENAI_ACCESS_TOKEN: "test"           # ← added to satisfy your initializer
       CLOUDINARY_URL: "cloudinary://key:secret@cloud/test"
 
     steps:
