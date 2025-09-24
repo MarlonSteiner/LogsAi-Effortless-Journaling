@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main, master ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-test:
@@ -40,7 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ✅ Add this step
       - name: Install system packages for native gems
         run: |
           sudo apt-get update
@@ -52,15 +52,18 @@ jobs:
           ruby-version: '3.4.1'
           bundler-cache: true
 
-      - name: Set up Node (if you use esbuild/yarn)
+      # Only set up Node if a yarn.lock exists (avoids cache error)
+      - name: Set up Node (yarn projects only)
+        if: hashFiles('yarn.lock') != ''
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'yarn'
 
-      - name: Install JS deps (skip if no yarn.lock)
-        run: |
-          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; fi
+      # Only install JS deps if yarn.lock exists
+      - name: Install JS deps
+        if: hashFiles('yarn.lock') != ''
+        run: yarn install --frozen-lockfile
 
       - name: Prepare database
         run: bin/rails db:prepare
