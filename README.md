@@ -124,6 +124,6 @@ Use this short About text in the GitHub sidebar:
 
 > Effortless journaling from voice, text, or photo. Rails app that turns daily inputs into structured entries with AI summarization.
 
-Suggested topics: `journaling`, `rails`, `ruby`, `openai`, `speech-to-text`, `summarization`, `cs50`, `ai`.
+Suggested topics: `journaling`, `rails`, `ruby`, `openai`, `speech-to-text`, `summarization`, `ai`.
 
 
